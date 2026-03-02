@@ -13,6 +13,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   select: [issue: Issue]
 }>()
+const { t } = useI18n()
 
 const quickItemIds = computed(() => props.issues.map(i => i.id))
 const issueMap = computed(() => new Map(props.issues.map(i => [i.id, i])))
@@ -41,7 +42,7 @@ const getShortId = (id: string) => {
   <div class="flex-1 min-h-0">
     <ScrollArea class="h-full">
       <div v-if="issues.length === 0" class="text-center text-muted-foreground py-4">
-        No issues ready to work on
+        {{ t('No issues ready to work on') }}
       </div>
 
       <div v-else class="space-y-1 pr-4 outline-none" tabindex="0" @keydown="handleKeydown">

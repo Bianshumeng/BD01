@@ -18,6 +18,7 @@ import { useKeyboardNavigation } from '~/composables/useKeyboardNavigation'
 const props = defineProps<{
   isLoading?: boolean
 }>()
+const { t } = useI18n()
 
 const { beadsPath, setPath, clearPath } = useBeadsPath()
 const { projects, sortedProjects, sortMode, hasReordered, removeProject, reorderProjects, setSortMode, resetSortOrder } = useProjects()
@@ -215,15 +216,15 @@ const exposeTargetPath = ref<string | null>(null)
 
 const exposeDialogTitle = computed(() => {
   if (!exposeTargetPath.value) return ''
-  return isExposed(exposeTargetPath.value) ? 'Remove from monitoring' : 'Expose to monitoring'
+  return isExposed(exposeTargetPath.value) ? t('Remove from monitoring') : t('Expose to monitoring')
 })
 
 const exposeDialogDescription = computed(() => {
   if (!exposeTargetPath.value) return ''
   const name = getFolderName(exposeTargetPath.value)
   return isExposed(exposeTargetPath.value)
-    ? `Are you sure you want to remove '${name}' from monitoring?`
-    : `Are you sure you want to expose '${name}' to monitoring?`
+    ? t("Are you sure you want to remove '{name}' from monitoring?", { name })
+    : t("Are you sure you want to expose '{name}' to monitoring?", { name })
 })
 
 function getProbeProjectForPath(projPath: string): ProbeProject | undefined {
@@ -304,7 +305,7 @@ watch(() => projects.value.length, () => {
         <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
         </svg>
-        Select Project
+        {{ t('Select Project') }}
       </Button>
 
     </div>
@@ -329,7 +330,7 @@ watch(() => projects.value.length, () => {
           >
             <polyline points="6 9 12 15 18 9" />
           </svg>
-          <span class="uppercase tracking-wide">Projects</span>
+          <span class="uppercase tracking-wide">{{ t('Projects') }}</span>
           <span class="ml-auto">({{ projects.length }})</span>
         </button>
         <!-- Sort mode toggle (hidden when collapsed) -->
@@ -360,7 +361,7 @@ watch(() => projects.value.length, () => {
                 </button>
               </TooltipTrigger>
               <TooltipContent>
-                {{ sortMode === 'alpha' ? 'A-Z (click for Z-A)' : sortMode === 'alpha-desc' ? 'Z-A (click for manual)' : 'Manual (click for A-Z)' }}
+                {{ sortMode === 'alpha' ? t('A-Z (click for Z-A)') : sortMode === 'alpha-desc' ? t('Z-A (click for manual)') : t('Manual (click for A-Z)') }}
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -379,7 +380,7 @@ watch(() => projects.value.length, () => {
                   </svg>
                 </button>
               </TooltipTrigger>
-              <TooltipContent>Reset to A-Z</TooltipContent>
+              <TooltipContent>{{ t('Reset to A-Z') }}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </template>
@@ -433,7 +434,7 @@ watch(() => projects.value.length, () => {
                 : 'text-muted-foreground/40 hover:text-green-500'"
               :disabled="togglingPath === proj.path"
               @click.stop.prevent="requestToggleExpose(proj.path)"
-              :title="isExposed(proj.path) ? 'Exposed to monitoring (click to disable)' : 'Not exposed (click to expose)'"
+              :title="isExposed(proj.path) ? t('Exposed to monitoring (click to disable)') : t('Not exposed (click to expose)')"
             >
               <svg v-if="togglingPath === proj.path" class="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="12" cy="12" r="10" stroke-opacity="0.25" />
@@ -491,10 +492,10 @@ watch(() => projects.value.length, () => {
     <!-- Remove Project Confirmation Dialog -->
     <ConfirmDialog
       v-model:open="isRemoveDialogOpen"
-      title="Remove project"
-      :description="`Are you sure you want to remove '${projectToRemoveName}' from your projects?`"
-      confirm-text="Remove"
-      cancel-text="Cancel"
+      :title="t('Remove project')"
+      :description="t('Are you sure you want to remove \'{name}\' from your projects?', { name: projectToRemoveName })"
+      :confirm-text="t('Remove')"
+      :cancel-text="t('Cancel')"
       variant="destructive"
       @confirm="confirmRemoveProject"
     />
@@ -504,8 +505,8 @@ watch(() => projects.value.length, () => {
       v-model:open="isExposeDialogOpen"
       :title="exposeDialogTitle"
       :description="exposeDialogDescription"
-      confirm-text="Confirm"
-      cancel-text="Cancel"
+      :confirm-text="t('Confirm')"
+      :cancel-text="t('Cancel')"
       @confirm="confirmToggleExpose"
     />
   </div>

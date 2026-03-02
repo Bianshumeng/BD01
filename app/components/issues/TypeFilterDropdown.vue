@@ -18,6 +18,7 @@ const props = defineProps<{
   selectedTypes: IssueType[]
   open?: boolean
 }>()
+const { t } = useI18n()
 
 defineEmits<{
   toggle: [type: IssueType]
@@ -51,7 +52,7 @@ const isSelected = (type: IssueType) => props.selectedTypes.includes(type)
               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
               <polyline points="14 2 14 8 20 8" />
             </svg>
-            Type
+            {{ t('Type') }}
             <span
               v-if="selectedTypes.length > 0"
               class="ml-0.5 rounded-full bg-primary text-primary-foreground text-[10px] px-1.5 min-w-[18px] text-center"
@@ -61,7 +62,7 @@ const isSelected = (type: IssueType) => props.selectedTypes.includes(type)
           </Button>
         </DropdownMenuTrigger>
       </TooltipTrigger>
-      <TooltipContent>Filter by type</TooltipContent>
+      <TooltipContent>{{ t('Filter by type') }}</TooltipContent>
       <DropdownMenuContent align="start" class="w-36">
       <DropdownMenuCheckboxItem
         v-for="opt in typeOptions"

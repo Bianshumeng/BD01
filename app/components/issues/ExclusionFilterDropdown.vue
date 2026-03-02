@@ -26,6 +26,7 @@ defineProps<{
   availableAssignees: string[]
   open?: boolean
 }>()
+const { t } = useI18n()
 
 const { exclusions, toggleStatus, togglePriority, toggleType, toggleLabel, toggleAssignee, clearAll, activeCount } = useExclusionFilters()
 
@@ -105,13 +106,13 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               {{ activeCount }}
             </span>
-            <span class="sr-only">Exclusion filters</span>
+            <span class="sr-only">{{ t('Exclusion filters') }}</span>
           </Button>
         </DropdownMenuTrigger>
       </TooltipTrigger>
-      <TooltipContent>Hide issues by criteria</TooltipContent>
+      <TooltipContent>{{ t('Hide issues by criteria') }}</TooltipContent>
       <DropdownMenuContent align="end" class="w-52">
-        <DropdownMenuLabel class="text-xs">Hide Issues</DropdownMenuLabel>
+        <DropdownMenuLabel class="text-xs">{{ t('Hide Issues') }}</DropdownMenuLabel>
         <DropdownMenuSeparator />
 
         <!-- Type Section -->
@@ -127,7 +128,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            Type
+            {{ t('Type') }}
             <span v-if="exclusions.type.length > 0" class="ml-auto text-[10px] text-muted-foreground">
               ({{ exclusions.type.length }})
             </span>
@@ -143,7 +144,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
               <template #indicator-icon>
                 <Check class="size-4" style="color: #ff3333" />
               </template>
-              <span :class="{ 'opacity-50': isTypeExcluded(option.value) }">{{ option.label }}</span>
+              <span :class="{ 'opacity-50': isTypeExcluded(option.value) }">{{ t(option.label) }}</span>
             </DropdownMenuCheckboxItem>
           </CollapsibleContent>
         </Collapsible>
@@ -161,7 +162,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            Labels
+            {{ t('Labels') }}
             <span v-if="exclusions.labels.length > 0" class="ml-auto text-[10px] text-muted-foreground">
               ({{ exclusions.labels.length }})
             </span>
@@ -195,7 +196,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            Status
+            {{ t('Status') }}
             <span v-if="exclusions.status.length > 0" class="ml-auto text-[10px] text-muted-foreground">
               ({{ exclusions.status.length }})
             </span>
@@ -211,7 +212,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
               <template #indicator-icon>
                 <Check class="size-4" style="color: #ff3333" />
               </template>
-              <span :class="{ 'opacity-50': isStatusExcluded(option.value) }">{{ option.label }}</span>
+              <span :class="{ 'opacity-50': isStatusExcluded(option.value) }">{{ t(option.label) }}</span>
             </DropdownMenuCheckboxItem>
           </CollapsibleContent>
         </Collapsible>
@@ -229,7 +230,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            Priority
+            {{ t('Priority') }}
             <span v-if="exclusions.priority.length > 0" class="ml-auto text-[10px] text-muted-foreground">
               ({{ exclusions.priority.length }})
             </span>
@@ -245,7 +246,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
               <template #indicator-icon>
                 <Check class="size-4" style="color: #ff3333" />
               </template>
-              <span :class="{ 'opacity-50': isPriorityExcluded(option.value) }">{{ option.label }}</span>
+              <span :class="{ 'opacity-50': isPriorityExcluded(option.value) }">{{ t(option.label) }}</span>
             </DropdownMenuCheckboxItem>
           </CollapsibleContent>
         </Collapsible>
@@ -263,7 +264,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
             >
               <polyline points="6 9 12 15 18 9" />
             </svg>
-            Assignee
+            {{ t('Assignee') }}
             <span v-if="exclusions.assignee.length > 0" class="ml-auto text-[10px] text-muted-foreground">
               ({{ exclusions.assignee.length }})
             </span>
@@ -289,7 +290,7 @@ const isAssigneeExcluded = (assignee: string) => exclusions.value.assignee.inclu
           <DropdownMenuSeparator />
           <div class="p-1">
             <Button variant="ghost" size="sm" class="w-full text-xs h-7 justify-start" @click="clearAll">
-              Clear all exclusions
+              {{ t('Clear all exclusions') }}
             </Button>
           </div>
         </template>

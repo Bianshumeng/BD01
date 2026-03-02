@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const { showBadgeIcons } = useTheme()
+const { isChinese, t } = useI18n()
 
 const typeConfig: Record<IssueType, { label: string; class: string }> = {
   bug: { label: 'BUG', class: 'badge-gradient bg-type-bug-gradient text-white' },
@@ -27,6 +28,7 @@ const typeIcons: Record<IssueType, string> = {
 }
 
 const config = computed(() => typeConfig[props.type] || typeConfig.task)
+const displayLabel = computed(() => (isChinese.value ? t(props.type) : config.value.label))
 </script>
 
 <template>
@@ -36,6 +38,6 @@ const config = computed(() => typeConfig[props.type] || typeConfig.task)
         <path :d="typeIcons[type] || typeIcons.task" />
       </svg>
     </span>
-    {{ config.label }}
+    {{ displayLabel }}
   </Badge>
 </template>

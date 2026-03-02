@@ -6,9 +6,11 @@ const showDebugPanel = ref(false)
 let menuInitialized = false
 
 export function useAppMenu() {
-  const initializeMenu = async () => {
+  const { t } = useI18n()
+
+  const initializeMenu = async (force = false) => {
     // Only initialize once and only in Tauri environment
-    if (menuInitialized) return
+    if (menuInitialized && !force) return
     if (typeof window === 'undefined' || (!window.__TAURI__ && !window.__TAURI_INTERNALS__)) return
 
     menuInitialized = true
@@ -18,7 +20,7 @@ export function useAppMenu() {
 
       // App menu items
       const aboutItem = await MenuItem.new({
-        text: 'About Beads Task-Issue Tracker',
+        text: t('About Beads Task-Issue Tracker'),
         action: () => {
           showAboutDialog.value = true
         },
@@ -26,7 +28,7 @@ export function useAppMenu() {
       const separator1 = await PredefinedMenuItem.new({ item: 'Separator' })
 
       const settingsItem = await MenuItem.new({
-        text: 'Settings...',
+        text: `${t('Settings')}...`,
         accelerator: 'CmdOrCtrl+,',
         action: () => {
           showSettingsDialog.value = true
@@ -34,14 +36,14 @@ export function useAppMenu() {
       })
 
       const checkUpdateItem = await MenuItem.new({
-        text: 'Check for Update...',
+        text: `${t('Check for Updates')}...`,
         action: () => {
           showUpdateDialog.value = true
         },
       })
 
       const showLogsItem = await MenuItem.new({
-        text: 'Show Logs...',
+        text: `${t('Show Logs')}...`,
         accelerator: 'CmdOrCtrl+Shift+L',
         action: () => {
           showDebugPanel.value = !showDebugPanel.value
@@ -58,7 +60,7 @@ export function useAppMenu() {
       const quitItem = await PredefinedMenuItem.new({ item: 'Quit' })
 
       const appMenu = await Submenu.new({
-        text: 'Beads Task-Issue Tracker',
+        text: t('Beads Task-Issue Tracker'),
         items: [
           aboutItem,
           separator1,
@@ -86,7 +88,7 @@ export function useAppMenu() {
       const selectAllItem = await PredefinedMenuItem.new({ item: 'SelectAll' })
 
       const editMenu = await Submenu.new({
-        text: 'Edit',
+        text: t('Edit'),
         items: [
           undoItem,
           redoItem,
@@ -105,7 +107,7 @@ export function useAppMenu() {
       const closeItem = await PredefinedMenuItem.new({ item: 'CloseWindow' })
 
       const windowMenu = await Submenu.new({
-        text: 'Window',
+        text: t('Window'),
         items: [
           minimizeItem,
           maximizeItem,

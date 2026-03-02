@@ -18,6 +18,7 @@ const emit = defineEmits<{
   reorder: [newOrder: string[]]
   unpin: [issueId: string]
 }>()
+const { t } = useI18n()
 
 const pinnedItemIds = computed(() => props.issues.map(i => i.id))
 const issueMap = computed(() => new Map(props.issues.map(i => [i.id, i])))
@@ -99,7 +100,7 @@ onBeforeUnmount(() => {
   <div class="flex-1 min-h-0">
     <ScrollArea class="h-full">
       <div v-if="issues.length === 0" class="text-center text-muted-foreground py-4">
-        No pinned issues
+        {{ t('No pinned issues') }}
       </div>
 
       <div v-else ref="listRef" class="space-y-1 pr-4 outline-none" tabindex="0" @keydown="handleKeydown">

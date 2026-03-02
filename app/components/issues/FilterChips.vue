@@ -22,6 +22,7 @@ defineEmits<{
   removeAssignee: [assignee: string]
   clearAll: []
 }>()
+const { t } = useI18n()
 
 // Get exclusion filters
 const { exclusions, toggleStatus: toggleExclusionStatus, togglePriority: toggleExclusionPriority, toggleType: toggleExclusionType, toggleLabel: toggleExclusionLabel, toggleAssignee: toggleExclusionAssignee, clearAll: clearAllExclusions, hasActiveExclusions } = useExclusionFilters()
@@ -72,7 +73,7 @@ const typeLabels: Record<IssueType, string> = {
   <div v-if="hasFilters" class="flex flex-col gap-1.5">
     <!-- Inclusion filters row -->
     <div v-if="hasInclusionFilters" class="flex flex-wrap items-center gap-1.5">
-      <span class="text-[10px] text-muted-foreground uppercase tracking-wide">Filters:</span>
+      <span class="text-[10px] text-muted-foreground uppercase tracking-wide">{{ t('Filters') }}:</span>
 
       <div
         v-for="status in statusFilters"
@@ -146,13 +147,13 @@ const typeLabels: Record<IssueType, string> = {
       </div>
 
       <Button variant="ghost" size="sm" class="h-5 px-1.5 text-[10px]" @click="$emit('clearAll')">
-        Clear
+        {{ t('Clear') }}
       </Button>
     </div>
 
     <!-- Exclusion filters row -->
     <div v-if="hasActiveExclusions" class="flex flex-wrap items-center gap-1.5">
-      <span class="text-[10px] text-muted-foreground uppercase tracking-wide">Hidden:</span>
+      <span class="text-[10px] text-muted-foreground uppercase tracking-wide">{{ t('Hidden') }}:</span>
 
       <div
         v-for="status in exclusions.status"
@@ -226,7 +227,7 @@ const typeLabels: Record<IssueType, string> = {
       </div>
 
       <Button variant="ghost" size="sm" class="h-5 px-1.5 text-[10px]" @click="clearAllExclusions">
-        Clear
+        {{ t('Clear') }}
       </Button>
     </div>
   </div>

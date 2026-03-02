@@ -24,6 +24,7 @@ const emit = defineEmits<{
   'update:open': [value: boolean]
   select: [path: string]
 }>()
+const { t } = useI18n()
 
 const { projects, addProject, isProject } = useProjects()
 
@@ -69,7 +70,7 @@ const loadDirectory = async (path: string) => {
     hasBeads.value = data.hasBeads
     usesDolt.value = data.usesDolt
   } catch (e) {
-    error.value = e instanceof Error ? e.message : 'Failed to load directory'
+    error.value = e instanceof Error ? e.message : t('Failed to load directory')
     entries.value = []
     hasBeads.value = false
     usesDolt.value = false
@@ -124,22 +125,22 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
   <Dialog :open="open" @update:open="$emit('update:open', $event)">
     <DialogContent class="max-w-4xl max-h-[80vh] flex flex-col">
       <DialogHeader>
-        <DialogTitle>Select Beads Project Folder</DialogTitle>
+        <DialogTitle>{{ t('Select Beads Project Folder') }}</DialogTitle>
         <DialogDescription>
-          Navigate to a folder containing a Beads database (.beads folder)
+          {{ t('Navigate to a folder containing a Beads database (.beads folder)') }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="flex-1 flex flex-col gap-4 overflow-hidden">
         <!-- Navigation bar -->
         <div class="flex items-center gap-2">
-          <Button variant="outline" size="icon" class="shrink-0" @click="navigateHome" title="Home">
+          <Button variant="outline" size="icon" class="shrink-0" @click="navigateHome" :title="t('Home')">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
           </Button>
-          <Button variant="outline" size="icon" class="shrink-0" @click="navigateUp" title="Parent folder">
+          <Button variant="outline" size="icon" class="shrink-0" @click="navigateUp" :title="t('Parent folder')">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="18 15 12 9 6 15" />
             </svg>
@@ -149,10 +150,10 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
               v-model="pathInput"
               dir="rtl"
               class="flex-1 font-mono text-sm h-9"
-              placeholder="/path/to/folder"
+              :placeholder="t('/path/to/folder')"
               @keyup.enter="handlePathInput"
             />
-            <Button variant="outline" size="icon" class="shrink-0" @click="handlePathInput" title="Go">
+            <Button variant="outline" size="icon" class="shrink-0" @click="handlePathInput" :title="t('Go')">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="9 18 15 12 9 6" />
               </svg>
@@ -177,7 +178,7 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
           </div>
           <div class="flex items-center gap-2">
             <Badge v-if="hasBeads" class="bg-green-600 text-white shrink-0">
-              Beads Project
+              {{ t('Beads Project') }}
             </Badge>
             <Badge v-if="usesDolt" variant="outline" class="text-[#29E3C1] border-[#29E3C1]/50 shrink-0 px-2 py-1">
               <svg style="width: 2rem; height: 0.65rem;" viewBox="0 0 163 56" fill="none">
@@ -195,7 +196,7 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
               <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              Added
+              {{ t('Added') }}
             </Badge>
           </div>
         </div>
@@ -209,11 +210,11 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
         <div class="flex-1 min-h-0 border border-border rounded-md overflow-hidden">
           <ScrollArea class="h-[280px]">
             <div v-if="isLoading" class="flex items-center justify-center py-12">
-              <span class="text-muted-foreground">Loading...</span>
+              <span class="text-muted-foreground">{{ t('Loading...') }}</span>
             </div>
 
             <div v-else-if="entries.length === 0" class="flex items-center justify-center py-12">
-              <span class="text-muted-foreground">No subfolders</span>
+              <span class="text-muted-foreground">{{ t('No subfolders') }}</span>
             </div>
 
             <div v-else class="divide-y divide-border">
@@ -260,7 +261,7 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
 
       <DialogFooter class="mt-4">
         <Button variant="outline" @click="handleCancel">
-          Cancel
+          {{ t('Cancel') }}
         </Button>
 
         <!-- If already a project, show "Open" button -->
@@ -268,7 +269,7 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
           <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
           </svg>
-          Open
+          {{ t('Open') }}
         </Button>
 
         <!-- If not a project yet, show "Add Project" button (disabled if no .beads) -->
@@ -285,7 +286,7 @@ const isCurrentProject = computed(() => isProject(currentPath.value))
             <path d="M12 5v14" />
             <path d="M5 12h14" />
           </svg>
-          Add Project
+          {{ t('Add Project') }}
         </Button>
       </DialogFooter>
     </DialogContent>

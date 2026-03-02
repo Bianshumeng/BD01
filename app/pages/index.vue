@@ -48,6 +48,7 @@ const { filters, toggleStatus, toggleType, togglePriority, toggleAssignee, clear
 const { columns, toggleColumn, setColumns, resetColumns } = useColumnConfig()
 const { beadsPath, hasStoredPath } = useBeadsPath()
 const { success: notifySuccess, error: notifyError } = useNotification()
+const { t } = useI18n()
 const { isBr, init: initCliClient } = useCliClient()
 const { projects } = useProjects()
 const {
@@ -149,10 +150,10 @@ const handleOnboardingFolderSelect = async (path: string) => {
 // Edit context for header
 const editContext = computed(() => {
   if (isCreatingNew.value) {
-    return 'New issue'
+    return t('New issue')
   }
   if (isEditMode.value && selectedIssue.value) {
-    return 'Editing'
+    return t('Editing')
   }
   return undefined
 })
@@ -295,10 +296,10 @@ onMounted(async () => {
       // Check attachment refs migration (may have been auto-migrated before sync)
       const migrationResult = await checkRefsMigration()
       if (migrationResult === 'just_migrated') {
-        notifySuccess('Attachments migrated', 'Attachment references and folders have been updated to the new format.')
+        notifySuccess(t('Attachments migrated'), t('Attachment references and folders have been updated to the new format.'))
       } else if (migrationResult) {
         await migrateRefs()
-        notifySuccess('Attachments migrated', 'Attachment references and folders have been updated to the new format.')
+        notifySuccess(t('Attachments migrated'), t('Attachment references and folders have been updated to the new format.'))
       }
 
       // Sequential: bd commands can't run concurrently (Dolt SIGSEGV on parallel access)
@@ -369,7 +370,7 @@ const handleRefresh = () => {
 const handleRepair = async () => {
   const success = await repairDatabase()
   if (success) {
-    notifySuccess('Database repaired', 'Your issues have been restored successfully.')
+    notifySuccess(t('Database repaired'), t('Your issues have been restored successfully.'))
     // Reload data after repair
     await fetchIssues()
     await fetchStats(issues.value)
@@ -381,19 +382,19 @@ const handleRepairAll = async () => {
   const results = await repairAll(projectPaths)
 
   if (results.failed === 0) {
-    notifySuccess('All databases repaired', `${results.success} project(s) repaired successfully.`)
+    notifySuccess(t('All databases repaired'), t('{count} project(s) repaired successfully.', { count: results.success }))
     // Reload data after repair
     await fetchIssues()
     await fetchStats(issues.value)
   } else {
-    notifyError('Some repairs failed', `${results.success} succeeded, ${results.failed} failed.`)
+    notifyError(t('Some repairs failed'), t('{success} succeeded, {failed} failed.', { success: results.success, failed: results.failed }))
   }
 }
 
 const handleMigrateToDolt = async () => {
   const success = await migrateToDolt()
   if (success) {
-    notifySuccess('Migration complete', 'Project has been migrated to the Dolt backend.')
+    notifySuccess(t('Migration complete'), t('Project has been migrated to the Dolt backend.'))
 
     // Start change detection + polling that were deferred during migration
     if (import.meta.client) {
@@ -413,7 +414,7 @@ const handleMigrateToDolt = async () => {
 const handleMigrateRefs = async () => {
   const success = await migrateRefs()
   if (success) {
-    notifySuccess('Attachments updated', 'File references have been updated for br CLI compatibility.')
+    notifySuccess(t('Attachments updated'), t('File references have been updated for br CLI compatibility.'))
     // Reload data after migration
     await fetchIssues()
     await fetchStats(issues.value)
@@ -477,10 +478,10 @@ return
       // Check attachment refs migration (may have been auto-migrated before sync)
       const migrationResult2 = await checkRefsMigration()
       if (migrationResult2 === 'just_migrated') {
-        notifySuccess('Attachments migrated', 'Attachment references and folders have been updated to the new format.')
+        notifySuccess(t('Attachments migrated'), t('Attachment references and folders have been updated to the new format.'))
       } else if (migrationResult2) {
         await migrateRefs()
-        notifySuccess('Attachments migrated', 'Attachment references and folders have been updated to the new format.')
+        notifySuccess(t('Attachments migrated'), t('Attachment references and folders have been updated to the new format.'))
       }
 
       // IMPORTANT: bd commands must run sequentially — concurrent Dolt embedded access
@@ -598,20 +599,20 @@ const handleSaveIssue = async (payload: UpdateIssuePayload) => {
         selectIssue(result)
         // Fetch full issue details to get all fields
         await fetchIssue(result.id)
-        notifySuccess('Issue created')
+        notifySuccess(t('Issue created'))
       }
       defaultParent.value = undefined
     } else if (selectedIssue.value) {
       await updateIssue(selectedIssue.value.id, payload)
       // Fetch full issue details to get comments and all fields
       await fetchIssue(selectedIssue.value.id)
-      notifySuccess('Issue saved')
+      notifySuccess(t('Issue saved'))
     }
     isEditMode.value = false
     isCreatingNew.value = false
     await fetchStats(issues.value)
   } catch {
-    notifyError('Failed to save issue')
+    notifyError(t('Failed to save issue'))
   }
 }
 
@@ -620,9 +621,9 @@ const handleAddComment = async (content: string) => {
   if (!selectedIssue.value) return
   try {
     await addComment(selectedIssue.value.id, content)
-    notifySuccess('Comment added')
+    notifySuccess(t('Comment added'))
   } catch {
-    notifyError('Failed to add comment')
+    notifyError(t('Failed to add comment'))
   }
 }
 
@@ -797,7 +798,7 @@ watch(
         />
         <!-- Sidebar toggle -->
         <div class="p-2 border-b border-border flex items-center" :class="isLeftSidebarOpen ? 'justify-between' : 'justify-center'">
-          <span v-if="isLeftSidebarOpen" class="text-sm font-medium px-2">Dashboard</span>
+          <span v-if="isLeftSidebarOpen" class="text-sm font-medium px-2">{{ t('Dashboard') }}</span>
           <Tooltip>
             <TooltipTrigger as-child>
               <Button
@@ -818,7 +819,7 @@ watch(
                 </svg>
               </Button>
             </TooltipTrigger>
-            <TooltipContent>{{ isLeftSidebarOpen ? 'Close dashboard' : 'Open dashboard' }}</TooltipContent>
+            <TooltipContent>{{ isLeftSidebarOpen ? t('Close dashboard') : t('Open dashboard') }}</TooltipContent>
           </Tooltip>
         </div>
 
@@ -830,16 +831,16 @@ watch(
 
             <div v-if="stats" class="space-y-4 mt-6">
               <div class="grid grid-cols-4 gap-1.5">
-                <KpiCard title="Total" :value="stats.total" :active="activeKpiFilter === null && filters.status.length === 0" @click="handleKpiClick('total')" />
-                <KpiCard title="Open" :value="stats.open" color="var(--color-status-open)" :active="activeKpiFilter === 'open'" @click="handleKpiClick('open')" />
-                <KpiCard title="In Progress" :value="stats.inProgress" color="var(--color-status-in-progress)" :active="activeKpiFilter === 'in_progress'" @click="handleKpiClick('in_progress')" />
-                <KpiCard title="Blocked" :value="stats.blocked" color="var(--color-status-blocked)" :active="activeKpiFilter === 'blocked'" @click="handleKpiClick('blocked')" />
+                <KpiCard :title="t('Total')" :value="stats.total" :active="activeKpiFilter === null && filters.status.length === 0" @click="handleKpiClick('total')" />
+                <KpiCard :title="t('Open')" :value="stats.open" color="var(--color-status-open)" :active="activeKpiFilter === 'open'" @click="handleKpiClick('open')" />
+                <KpiCard :title="t('In Progress')" :value="stats.inProgress" color="var(--color-status-in-progress)" :active="activeKpiFilter === 'in_progress'" @click="handleKpiClick('in_progress')" />
+                <KpiCard :title="t('Blocked')" :value="stats.blocked" color="var(--color-status-blocked)" :active="activeKpiFilter === 'blocked'" @click="handleKpiClick('blocked')" />
               </div>
             </div>
 
             <div v-if="!stats" class="flex items-center justify-center py-8">
               <OnboardingCard v-if="showOnboarding" @browse="openFolderPicker" />
-              <span v-else class="text-muted-foreground text-sm">Loading...</span>
+              <span v-else class="text-muted-foreground text-sm">{{ t('Loading...') }}</span>
             </div>
           </div>
 
@@ -970,7 +971,7 @@ watch(
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </Button>
-          <span v-if="isRightSidebarOpen" class="text-sm font-medium px-2">Details</span>
+          <span v-if="isRightSidebarOpen" class="text-sm font-medium px-2">{{ t('Details') }}</span>
         </div>
 
         <!-- Sidebar content -->
@@ -1028,7 +1029,7 @@ watch(
               </div>
 
               <div v-else class="text-center text-muted-foreground py-8">
-                Select an issue to view details
+                {{ t('Select an issue to view details') }}
               </div>
             </div>
           </ScrollArea>
@@ -1055,21 +1056,21 @@ watch(
           :class="mobilePanel === 'dashboard' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'"
           @click="mobilePanel = 'dashboard'"
         >
-          Dashboard
+          {{ t('Dashboard') }}
         </button>
         <button
           class="flex-1 py-3 text-sm font-medium transition-colors"
           :class="mobilePanel === 'issues' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'"
           @click="mobilePanel = 'issues'"
         >
-          Issues ({{ filteredIssues.length }})
+          {{ t('Issues') }} ({{ filteredIssues.length }})
         </button>
         <button
           class="flex-1 py-3 text-sm font-medium transition-colors"
           :class="mobilePanel === 'details' ? 'text-primary border-b-2 border-primary' : 'text-muted-foreground'"
           @click="mobilePanel = 'details'"
         >
-          Details
+          {{ t('Details') }}
         </button>
       </div>
 
@@ -1202,7 +1203,7 @@ watch(
             </div>
 
             <div v-else class="text-center text-muted-foreground py-8">
-              Select an issue to view details
+              {{ t('Select an issue to view details') }}
             </div>
           </div>
         </ScrollArea>
@@ -1220,7 +1221,7 @@ watch(
         <button
           class="flex items-center gap-1.5 hover:text-foreground transition-colors"
           :class="showDebugPanel ? 'text-foreground' : ''"
-          title="Toggle Debug Panel (⌘⇧L)"
+          :title="t('Toggle Debug Panel (⌘⇧L)')"
           @click="showDebugPanel = !showDebugPanel"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1237,7 +1238,7 @@ watch(
         <!-- Settings -->
         <button
           class="flex items-center hover:text-foreground transition-colors"
-          title="Settings (⌘,)"
+          :title="t('Settings (⌘,)')"
           @click="showSettingsDialog = true"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1250,7 +1251,7 @@ watch(
         <span
           v-if="probeEnabled && isDev"
           class="flex items-center gap-1 text-green-500"
-          title="Probe broadcasting enabled"
+          :title="t('Probe broadcasting enabled')"
         >
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9" />
@@ -1259,7 +1260,7 @@ watch(
             <path d="M16.2 7.8c2.3 2.3 2.3 6.1 0 8.4" />
             <path d="M19.1 4.9C23 8.8 23 15.2 19.1 19.1" />
           </svg>
-          <span class="uppercase text-[10px] font-semibold tracking-wider">Probe</span>
+          <span class="uppercase text-[10px] font-semibold tracking-wider">{{ t('Probe') }}</span>
         </span>
       </div>
 
@@ -1283,14 +1284,14 @@ watch(
     <!-- Sync Error Dialog -->
     <ConfirmDialog
       v-model:open="showSyncErrorDialog"
-      title="Sync Error"
-      confirm-text="OK"
+      :title="t('Sync Error')"
+      :confirm-text="t('OK')"
       :show-cancel="false"
       @confirm="closeSyncErrorDialog"
     >
       <template #description>
         <p class="text-sm text-muted-foreground mb-2">
-          The sync operation failed with the following error:
+          {{ t('The sync operation failed with the following error:') }}
         </p>
         <pre class="text-sm text-destructive bg-muted p-3 rounded-md overflow-x-auto whitespace-pre-wrap break-words">{{ lastSyncError }}</pre>
       </template>
@@ -1304,29 +1305,29 @@ watch(
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            Database Repair Required
+            {{ t('Database Repair Required') }}
           </DialogTitle>
           <DialogDescription class="text-left space-y-3 pt-2">
             <p>
-              A database schema incompatibility was detected. This is caused by a bug in the bd CLI update (version 0.49.4).
+              {{ t('A database schema incompatibility was detected. This is caused by a bug in the bd CLI update (version 0.49.4).') }}
             </p>
             <p v-if="affectedProject" class="text-sm bg-muted p-2 rounded font-mono break-all">
               {{ affectedProject }}
             </p>
             <p>
-              <strong>What will happen:</strong>
+              <strong>{{ t('What will happen:') }}</strong>
             </p>
             <ul class="list-disc list-inside text-sm space-y-1 ml-2">
-              <li>Your current database will be backed up</li>
-              <li>The database will be recreated from your issues backup file</li>
-              <li>All your issues will be preserved</li>
+              <li>{{ t('Your current database will be backed up') }}</li>
+              <li>{{ t('The database will be recreated from your issues backup file') }}</li>
+              <li>{{ t('All your issues will be preserved') }}</li>
             </ul>
             <p v-if="repairProgress" class="text-sm text-muted-foreground">
-              Repairing {{ repairProgress.current }}/{{ repairProgress.total }}:
+              {{ t('Repairing') }} {{ repairProgress.current }}/{{ repairProgress.total }}:
               <span class="font-mono text-xs">{{ repairProgress.currentPath.split('/').pop() }}</span>
             </p>
             <p v-if="repairError" class="text-destructive text-sm">
-              Error: {{ repairError }}
+              {{ t('Error') }}: {{ repairError }}
             </p>
           </DialogDescription>
         </DialogHeader>
@@ -1336,18 +1337,18 @@ watch(
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Repair All ({{ projects.length }})
+            {{ t('Repair All ({count})', { count: projects.length }) }}
           </Button>
           <div class="flex gap-2 ml-auto">
             <Button variant="outline" :disabled="isRepairing" @click="dismissRepair">
-              Later
+              {{ t('Later') }}
             </Button>
             <Button :disabled="isRepairing" @click="handleRepair">
               <svg v-if="isRepairing && !repairProgress" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
-              {{ isRepairing && !repairProgress ? 'Repairing...' : 'Repair This Project' }}
+              {{ isRepairing && !repairProgress ? t('Repairing...') : t('Repair This Project') }}
             </Button>
           </div>
         </div>
@@ -1362,39 +1363,38 @@ watch(
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
-            Database Migration Required
+            {{ t('Database Migration Required') }}
           </DialogTitle>
           <DialogDescription class="text-left space-y-3 pt-2">
             <p>
-              Your bd version (>= 0.50) can no longer read previous SQLite databases.
-              This project needs to be migrated to the new Dolt backend. This is a one-time operation.
+              {{ t('Your bd version (>= 0.50) can no longer read previous SQLite databases. This project needs to be migrated to the new Dolt backend. This is a one-time operation.') }}
             </p>
             <p v-if="migrateAffectedProject" class="text-sm bg-muted p-2 rounded font-mono break-all">
               {{ migrateAffectedProject }}
             </p>
             <p>
-              <strong>What will happen:</strong>
+              <strong>{{ t('What will happen:') }}</strong>
             </p>
             <ul class="list-disc list-inside text-sm space-y-1 ml-2">
-              <li>A new Dolt database will be created (<code class="text-xs">bd init</code>)</li>
-              <li>Your issues will be imported from the JSONL backup file (<code class="text-xs">bd import</code>)</li>
-              <li>None of your issues will be lost — only previously deleted issues (tombstones) are skipped</li>
+              <li>{{ t('A new Dolt database will be created (<code class=\"text-xs\">bd init</code>)') }}</li>
+              <li>{{ t('Your issues will be imported from the JSONL backup file (<code class=\"text-xs\">bd import</code>)') }}</li>
+              <li>{{ t('None of your issues will be lost — only previously deleted issues (tombstones) are skipped') }}</li>
             </ul>
             <p v-if="migrateError" class="text-destructive text-sm">
-              Error: {{ migrateError }}
+              {{ t('Error') }}: {{ migrateError }}
             </p>
           </DialogDescription>
         </DialogHeader>
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" :disabled="isMigrating" @click="dismissMigration">
-            Later
+            {{ t('Later') }}
           </Button>
           <Button :disabled="isMigrating" class="bg-[#29E3C1] hover:bg-[#22c9aa] text-black" @click="handleMigrateToDolt">
             <svg v-if="isMigrating" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isMigrating ? 'Migrating...' : 'Migrate Now' }}
+            {{ isMigrating ? t('Migrating...') : t('Migrate Now') }}
           </Button>
         </div>
       </DialogContent>
@@ -1408,34 +1408,33 @@ watch(
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
-            Attachment Update Required
+            {{ t('Attachment Update Required') }}
           </DialogTitle>
           <DialogDescription as="div" class="space-y-3 text-sm">
             <p>
-              Attachments now use the filesystem directly.
-              This cleanup removes old attachment paths from external references. One-time operation.
+              {{ t('Attachments now use the filesystem directly. This cleanup removes old attachment paths from external references. One-time operation.') }}
             </p>
             <p class="text-muted-foreground">
-              A backup of your data will be created before any changes are made.
+              {{ t('A backup of your data will be created before any changes are made.') }}
             </p>
             <p class="bg-muted p-2 rounded text-xs font-mono">
-              {{ refsRefCount }} issue(s) with references to clean up
+              {{ t('{count} issue(s) with references to clean up', { count: refsRefCount }) }}
             </p>
             <p v-if="refsMigrateError" class="text-destructive text-sm">
-              Error: {{ refsMigrateError }}
+              {{ t('Error') }}: {{ refsMigrateError }}
             </p>
           </DialogDescription>
         </DialogHeader>
         <div class="flex justify-end gap-2 mt-4">
           <Button variant="outline" :disabled="isRefsMigrating" @click="dismissRefsMigration">
-            Later
+            {{ t('Later') }}
           </Button>
           <Button :disabled="isRefsMigrating" class="bg-[#29E3C1] hover:bg-[#22c9aa] text-black" @click="handleMigrateRefs">
             <svg v-if="isRefsMigrating" class="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            {{ isRefsMigrating ? 'Updating...' : 'Update Now' }}
+            {{ isRefsMigrating ? t('Updating...') : t('Update Now') }}
           </Button>
         </div>
       </DialogContent>

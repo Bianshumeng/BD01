@@ -4,6 +4,7 @@ const props = defineProps<{
   displayValue?: string
 }>()
 
+const { t } = useI18n()
 const copied = ref(false)
 
 const copyToClipboard = async (event: Event) => {
@@ -23,7 +24,7 @@ const copyToClipboard = async (event: Event) => {
 <template>
   <button
     class="flex items-center gap-1 text-[10px] text-muted-foreground font-mono hover:text-foreground transition-colors"
-    :title="`Copy ${props.value}`"
+    :title="t('Copy {value}', { value: props.value })"
     @click="copyToClipboard"
   >
     {{ displayValue ?? value }}

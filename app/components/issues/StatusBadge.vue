@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const { showBadgeIcons } = useTheme()
+const { isChinese, t } = useI18n()
 
 const statusConfig: Record<IssueStatus, { label: string; class: string }> = {
   open: { label: 'OPEN', class: 'badge-gradient bg-status-open-gradient text-white' },
@@ -29,6 +30,7 @@ const statusIcons: Partial<Record<IssueStatus, string>> = {
 }
 
 const config = computed(() => statusConfig[props.status] || statusConfig.open)
+const displayLabel = computed(() => (isChinese.value ? t(props.status) : config.value.label))
 </script>
 
 <template>
@@ -38,6 +40,6 @@ const config = computed(() => statusConfig[props.status] || statusConfig.open)
         <path :d="statusIcons[status]" />
       </svg>
     </span>
-    {{ config.label }}
+    {{ displayLabel }}
   </Badge>
 </template>

@@ -10,6 +10,7 @@ const props = defineProps<{
   comments: Comment[]
   readonly?: boolean
 }>()
+const { t } = useI18n()
 
 // Collapsible state (persisted per project, open by default)
 const commentsSectionState = useProjectStorage<{ open: boolean }>('commentsSection', { open: true })
@@ -80,7 +81,7 @@ const handleSubmit = () => {
         <polyline points="6 9 12 15 18 9" />
       </svg>
       <h4 class="text-[10px] font-medium uppercase tracking-wide text-muted-foreground group-hover:text-foreground transition-colors">
-        Comments ({{ comments.length }})
+        {{ t('Comments') }} ({{ comments.length }})
       </h4>
     </button>
 
@@ -112,19 +113,19 @@ const handleSubmit = () => {
       </ScrollArea>
 
       <div v-else class="text-center text-muted-foreground text-xs py-3">
-        No comments yet
+        {{ t('No comments yet') }}
       </div>
 
       <form v-if="!readonly" class="space-y-2" @submit.prevent="handleSubmit">
         <Textarea
           v-model="newComment"
-          placeholder="Add a comment..."
+          :placeholder="t('Add a comment...')"
           rows="2"
           class="text-xs"
         />
         <div class="flex justify-end">
           <Button type="submit" size="sm" class="h-7 text-xs" :disabled="!newComment.trim()">
-            Add Comment
+            {{ t('Add Comment') }}
           </Button>
         </div>
       </form>

@@ -18,6 +18,7 @@ const props = defineProps<{
   selectedStatuses: IssueStatus[]
   open?: boolean
 }>()
+const { t } = useI18n()
 
 defineEmits<{
   toggle: [status: IssueStatus]
@@ -54,7 +55,7 @@ const isSelected = (status: IssueStatus) => props.selectedStatuses.includes(stat
               <circle cx="12" cy="12" r="10" />
               <polyline points="12 6 12 12 16 14" />
             </svg>
-            Status
+            {{ t('Status') }}
             <span
               v-if="selectedStatuses.length > 0"
               class="ml-0.5 rounded-full bg-primary text-primary-foreground text-[10px] px-1.5 min-w-[18px] text-center"
@@ -64,7 +65,7 @@ const isSelected = (status: IssueStatus) => props.selectedStatuses.includes(stat
           </Button>
         </DropdownMenuTrigger>
       </TooltipTrigger>
-      <TooltipContent>Filter by status</TooltipContent>
+      <TooltipContent>{{ t('Filter by status') }}</TooltipContent>
       <DropdownMenuContent align="start" class="w-40">
       <DropdownMenuCheckboxItem
         v-for="opt in statusOptions"

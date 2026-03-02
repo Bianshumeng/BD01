@@ -10,10 +10,12 @@ import { Label } from '~/components/ui/label'
 import { Button } from '~/components/ui/button'
 import { getCliBinaryPath, setCliBinaryPath, checkExternalHealth } from '~/utils/bd-api'
 import type { ThemeDefinition } from '~/composables/useTheme'
+import type { AppLocale } from '~/composables/useI18n'
 
 const open = defineModel<boolean>('open', { default: false })
 
 const { theme: activeTheme, themes, setTheme } = useTheme()
+const { locale, supportedLocales, t, setLocale } = useI18n()
 
 // SVG icons for theme cards
 const themeIconPaths: Record<string, string> = {
@@ -83,43 +85,76 @@ async function testConnection() {
     isTesting.value = false
   }
 }
+
+function selectLocale(nextLocale: AppLocale) {
+  if (locale.value === nextLocale) return
+  setLocale(nextLocale)
+
+  // Rebuild native app menu with the newly selected language.
+  const { initializeMenu } = useAppMenu()
+  initializeMenu(true)
+}
 </script>
 
 <template>
   <Dialog v-model:open="open">
     <DialogContent class="sm:max-w-lg">
       <DialogHeader>
-        <DialogTitle>Settings</DialogTitle>
+        <DialogTitle>{{ t('Settings') }}</DialogTitle>
         <DialogDescription>
-          Choose which CLI client to use for issue management.
+          {{ t('Choose which CLI client to use for issue management.') }}
         </DialogDescription>
       </DialogHeader>
 
       <div class="space-y-6 pt-2">
-        <!-- Theme Selector -->
+        <!-- Language selector -->
         <div class="space-y-3">
-          <Label>Theme</Label>
-          <div class="grid grid-cols-4 gap-3">
+          <Label>{{ t('Language') }}</Label>
+          <div class="grid grid-cols-2 gap-3">
             <button
-              v-for="t in themes"
-              :key="t.id"
-              class="relative flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-center transition-colors"
-              :class="activeTheme === t.id
+              v-for="item in supportedLocales"
+              :key="item.value"
+              class="relative flex items-center justify-between gap-2 rounded-lg border-2 p-3 text-left transition-colors"
+              :class="locale === item.value
                 ? 'border-primary bg-primary/5'
                 : 'border-muted hover:border-muted-foreground/25 hover:bg-muted/50'"
-              @click="setTheme(t.id)"
+              @click="selectLocale(item.value)"
+            >
+                <span class="text-sm font-medium">
+                {{ item.value === 'zh-CN' ? t('Simplified Chinese') : t('English') }}
+              </span>
+              <div
+                class="h-2 w-2 rounded-full transition-colors"
+                :class="locale === item.value ? 'bg-primary' : 'bg-transparent'"
+              />
+            </button>
+          </div>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="space-y-3">
+          <Label>{{ t('Theme') }}</Label>
+          <div class="grid grid-cols-4 gap-3">
+            <button
+              v-for="themeItem in themes"
+              :key="themeItem.id"
+              class="relative flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-center transition-colors"
+              :class="activeTheme === themeItem.id
+                ? 'border-primary bg-primary/5'
+                : 'border-muted hover:border-muted-foreground/25 hover:bg-muted/50'"
+              @click="setTheme(themeItem.id)"
             >
               <div class="flex items-center justify-center h-8 w-8">
                 <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle v-if="t.icon === 'sun'" v-bind="sunCircle" />
-                  <rect v-if="t.icon === 'square'" x="3" y="3" width="18" height="18" rx="2" />
-                  <path v-if="themeIconPaths[t.icon]" :d="themeIconPaths[t.icon]" />
+                  <circle v-if="themeItem.icon === 'sun'" v-bind="sunCircle" />
+                  <rect v-if="themeItem.icon === 'square'" x="3" y="3" width="18" height="18" rx="2" />
+                  <path v-if="themeIconPaths[themeItem.icon]" :d="themeIconPaths[themeItem.icon]" />
                 </svg>
               </div>
-              <span class="text-xs font-medium">{{ t.label }}</span>
+              <span class="text-xs font-medium">{{ t(themeItem.label) }}</span>
               <div
                 class="absolute top-1.5 right-1.5 h-2 w-2 rounded-full transition-colors"
-                :class="activeTheme === t.id ? 'bg-primary' : 'bg-transparent'"
+                :class="activeTheme === themeItem.id ? 'bg-primary' : 'bg-transparent'"
               />
             </button>
           </div>
@@ -127,7 +162,7 @@ async function testConnection() {
 
         <!-- CLI Client Selector -->
         <div class="space-y-3">
-          <Label>CLI Client</Label>
+          <Label>{{ t('CLI Client') }}</Label>
           <div class="grid grid-cols-2 gap-3">
             <!-- br option (preferred) -->
             <button
@@ -151,7 +186,7 @@ async function testConnection() {
                 <span class="font-mono font-semibold text-sm">br</span>
               </div>
               <p class="text-xs text-muted-foreground pl-7">
-                Beads Rust (SQLite + JSONL)
+                {{ t('Beads Rust (SQLite + JSONL)') }}
               </p>
             </button>
 
@@ -177,7 +212,7 @@ async function testConnection() {
                 <span class="font-mono font-semibold text-sm">bd</span>
               </div>
               <p class="text-xs text-muted-foreground pl-7">
-                Original Beads CLI (Go)
+                {{ t('Original Beads CLI (Go)') }}
               </p>
             </button>
           </div>
@@ -186,7 +221,7 @@ async function testConnection() {
         <!-- Probe Toggle (dev-only until probe is a public feature) -->
         <div v-if="isDev" class="space-y-3">
           <div class="flex items-center justify-between">
-            <Label>Probe (monitoring broadcast)</Label>
+            <Label>{{ t('Probe (monitoring broadcast)') }}</Label>
             <button
               class="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
               :class="probeEnabled ? 'bg-primary' : 'bg-muted-foreground/30'"
@@ -199,7 +234,7 @@ async function testConnection() {
             </button>
           </div>
           <p class="text-xs text-muted-foreground">
-            When enabled, registers projects with the probe for external monitoring.
+            {{ t('When enabled, registers projects with the probe for external monitoring.') }}
           </p>
 
           <!-- URL input + Test connection (visible only when probe enabled) -->
@@ -211,17 +246,17 @@ async function testConnection() {
                 placeholder="http://localhost:9100"
                 class="flex-1 rounded-md border border-input bg-background px-3 py-1.5 text-sm font-mono shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               />
-              <Button
-                size="sm"
-                variant="outline"
-                :disabled="isTesting"
-                @click="testConnection"
-              >
+                <Button
+                  size="sm"
+                  variant="outline"
+                  :disabled="isTesting"
+                  @click="testConnection"
+                >
                 <svg v-if="isTesting" class="animate-spin h-3 w-3 mr-1" viewBox="0 0 24 24" fill="none">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Test connection
+                {{ t('Test connection') }}
               </Button>
             </div>
 
@@ -236,7 +271,7 @@ async function testConnection() {
                 <line x1="9" y1="9" x2="15" y2="15" />
               </svg>
               <span :class="healthResult ? 'text-green-600 dark:text-green-400' : 'text-destructive'">
-                {{ healthResult ? 'Connected' : 'Disconnected' }}
+                {{ healthResult ? t('Connected') : t('Disconnected') }}
               </span>
             </div>
           </div>
@@ -248,7 +283,7 @@ async function testConnection() {
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
           </svg>
-          Switching client...
+          {{ t('Switching client...') }}
         </div>
 
         <!-- Result -->

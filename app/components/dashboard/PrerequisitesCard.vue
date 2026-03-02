@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import LinkifiedText from '~/components/ui/linkified-text/LinkifiedText.vue'
+const { t, isChinese } = useI18n()
 
-const prerequisitesContent = `**Beads** is an AI-native issue tracker that lives directly in your codebase. Issues are stored as files in a \`.beads\` folder within your repository.
+const prerequisitesContentEn = `**Beads** is an AI-native issue tracker that lives directly in your codebase. Issues are stored as files in a \`.beads\` folder within your repository.
 
 ### Prerequisites
 
@@ -37,6 +38,45 @@ bd create "My first issue" --type task --priority p2
 - [Beads Documentation](https://beads.dev)
 - [GitHub Repository](https://github.com/steveyegge/beads)
 `
+
+const prerequisitesContentZh = `**Beads** 是一个原生面向 AI 的问题追踪工具，直接驻留在你的代码仓库中。所有问题会以文件形式存放在仓库内的 \`.beads\` 目录。
+
+### 准备工作
+
+#### 1. 安装 Beads CLI
+
+\`\`\`bash
+# 使用 npm
+npm install -g @beads/cli
+
+# 或使用 Homebrew（macOS）
+brew install beads
+\`\`\`
+
+#### 2. 在项目中初始化 Beads
+
+进入你的项目目录后执行：
+
+\`\`\`bash
+cd /path/to/your/project
+bd init
+\`\`\`
+
+这会在仓库中创建 \`.beads\` 目录。
+
+#### 3. 创建第一条问题
+
+\`\`\`bash
+bd create "我的第一个问题" --type task --priority p2
+\`\`\`
+
+### 了解更多
+
+- [Beads 文档](https://beads.dev)
+- [GitHub 仓库](https://github.com/steveyegge/beads)
+`
+
+const prerequisitesContent = computed(() => (isChinese.value ? prerequisitesContentZh : prerequisitesContentEn))
 </script>
 
 <template>
@@ -52,8 +92,8 @@ bd create "My first issue" --type task --priority p2
           </svg>
         </div>
         <div>
-          <h2 class="text-lg font-semibold">Welcome to Beads Task-Issue Tracker</h2>
-          <p class="text-sm text-muted-foreground">Follow the steps below to get started</p>
+          <h2 class="text-lg font-semibold">{{ t('Welcome to Beads Task-Issue Tracker') }}</h2>
+          <p class="text-sm text-muted-foreground">{{ t('Follow the steps below to get started') }}</p>
         </div>
       </div>
 

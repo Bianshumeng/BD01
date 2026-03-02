@@ -4,6 +4,8 @@ import { X } from 'lucide-vue-next'
 import { readImageFile } from '~/utils/open-url'
 import { isUrl } from '~/utils/markdown'
 
+const { t } = useI18n()
+
 const props = withDefaults(defineProps<{
   src: string
   alt: string
@@ -81,12 +83,12 @@ const handleImageError = () => {
 
     <!-- Loading state -->
     <div v-if="isLoading" class="w-[180px] h-[108px] bg-muted rounded-lg flex items-center justify-center">
-      <span class="text-sm text-muted-foreground">Loading...</span>
+      <span class="text-sm text-muted-foreground">{{ t('Loading...') }}</span>
     </div>
 
     <!-- Error state -->
     <div v-else-if="hasError" class="w-[180px] h-[108px] bg-destructive/10 rounded-lg flex items-center justify-center">
-      <span class="text-sm text-destructive">Error loading image</span>
+      <span class="text-sm text-destructive">{{ t('Error loading image') }}</span>
     </div>
 
     <!-- Image -->

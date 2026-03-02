@@ -35,6 +35,8 @@ const emit = defineEmits<{
   'update:editedContent': [value: string]
 }>()
 
+const { t } = useI18n()
+
 const renderedHtml = computed(() => renderMarkdown(props.markdownContent))
 
 // Handle link clicks inside rendered markdown
@@ -350,7 +352,7 @@ onUnmounted(() => {
               @click="emit('save')"
             >
               <Save class="w-3.5 h-3.5" />
-              {{ isSaving ? 'Saving...' : 'Save' }}
+              {{ isSaving ? t('Saving...') : t('Save') }}
             </Button>
             <Button
               variant="outline"
@@ -360,7 +362,7 @@ onUnmounted(() => {
               @click="emit('cancel-edit')"
             >
               <X class="w-3.5 h-3.5" />
-              Cancel
+              {{ t('Cancel') }}
             </Button>
           </template>
           <Button
@@ -371,7 +373,7 @@ onUnmounted(() => {
             @click="emit('toggle-edit')"
           >
             <Pencil class="w-3.5 h-3.5" />
-            Edit
+            {{ t('Edit') }}
           </Button>
         </div>
       </div>
@@ -385,7 +387,7 @@ onUnmounted(() => {
               ref="searchInputRef"
               v-model="searchQuery"
               type="text"
-              placeholder="Search in document..."
+              :placeholder="t('Search in document...')"
               class="w-full h-8 pl-8 pr-3 text-sm rounded-md border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             >
           </div>
@@ -440,7 +442,7 @@ onUnmounted(() => {
 
         <ScrollArea class="flex-1 min-h-0">
           <div v-if="isLoading" class="flex items-center justify-center h-32 text-muted-foreground">
-            Loading...
+            {{ t('Loading...') }}
           </div>
           <!-- Edit mode: contentEditable with raw markdown -->
           <div

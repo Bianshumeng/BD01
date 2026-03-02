@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
-import { X, Plus, ChevronDown } from 'lucide-vue-next'
+import { X, Plus } from 'lucide-vue-next'
 import LabelBadge from '~/components/issues/LabelBadge.vue'
 
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   modelValue: string[]
   availableLabels: string[]
   placeholder?: string
-}>(), {
-  placeholder: 'Add labels...',
-})
+}>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string[]]
@@ -27,6 +27,8 @@ const filteredLabels = computed(() => {
     .filter(label => !props.modelValue.includes(label))
     .filter(label => !query || label.toLowerCase().includes(query))
 })
+
+const inputPlaceholder = computed(() => props.placeholder || t('Add labels...'))
 
 // Check if current query matches no existing label (for "create new" option)
 const showCreateOption = computed(() => {
@@ -113,7 +115,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         ref="inputRef"
         v-model="searchQuery"
         type="text"
-        :placeholder="placeholder"
+        :placeholder="inputPlaceholder"
         class="flex h-8 w-full rounded-md border border-input bg-background px-3 py-2 text-xs ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         @focus="handleInputFocus"
         @blur="handleInputBlur"
@@ -135,7 +137,7 @@ const handleKeydown = (e: KeyboardEvent) => {
             @click="handleCreateNew"
           >
             <Plus class="w-3.5 h-3.5 mr-2 text-sky-500" />
-            <span class="text-sky-500">Create "{{ searchQuery.trim() }}"</span>
+            <span class="text-sky-500">{{ t('Create "{label}"', { label: searchQuery.trim() }) }}</span>
           </button>
 
           <!-- Existing labels -->
@@ -158,7 +160,7 @@ const handleKeydown = (e: KeyboardEvent) => {
         class="absolute z-50 mt-1 w-full min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md"
       >
         <div class="px-2 py-3 text-xs text-muted-foreground text-center">
-          No labels found
+          {{ t('No labels found') }}
         </div>
       </div>
     </div>

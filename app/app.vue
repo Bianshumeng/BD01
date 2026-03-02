@@ -4,15 +4,16 @@
 
   const { isDark } = useTheme()
   const { showUpdateDialog, showAboutDialog, showSettingsDialog, initializeMenu } = useAppMenu()
+  const { locale, t } = useI18n()
 
   useHead({
-    title: 'Beads Task-Issue Tracker',
+    title: () => t('Beads Task-Issue Tracker'),
     meta: [
-      { name: 'description', content: 'Beads Task / Issue Tracking Manager' },
+      { name: 'description', content: () => t('Beads Task / Issue Tracking Manager') },
       { name: 'theme-color', content: () => isDark.value ? '#1e1e1e' : '#ffffff' },
     ],
     htmlAttrs: {
-      lang: 'en',
+      lang: () => locale.value,
       class: () => isDark.value ? 'dark' : '',
     },
   })

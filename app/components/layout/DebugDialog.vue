@@ -9,6 +9,7 @@ import { Button } from '~/components/ui/button'
 import { readLogs, clearLogs, getLogPath } from '~/utils/bd-api'
 
 const open = defineModel<boolean>('open', { default: false })
+const { t } = useI18n()
 
 const logs = ref('')
 const logPath = ref('')
@@ -32,7 +33,7 @@ const fetchLogs = async () => {
       scrollToBottom()
     })
   } catch (e) {
-    console.error('Failed to fetch logs:', e)
+    console.error(t('Failed to fetch logs:'), e)
   }
 }
 
@@ -42,7 +43,7 @@ const handleClearLogs = async () => {
     await clearLogs()
     logs.value = ''
   } catch (e) {
-    console.error('Failed to clear logs:', e)
+    console.error(t('Failed to clear logs:'), e)
   } finally {
     isLoading.value = false
   }
@@ -98,7 +99,7 @@ onUnmounted(() => {
             <path d="M12 20h9" />
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
           </svg>
-          Debug Logs
+          {{ t('Debug Logs') }}
         </DialogTitle>
       </DialogHeader>
 
@@ -122,7 +123,7 @@ onUnmounted(() => {
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
             </svg>
-            {{ isAutoRefresh ? 'Live' : 'Paused' }}
+            {{ isAutoRefresh ? t('Live') : t('Paused') }}
           </Button>
 
           <Button variant="outline" size="sm" :disabled="isAutoRefresh" @click="fetchLogs">
@@ -130,7 +131,7 @@ onUnmounted(() => {
               <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
               <path d="M21 3v5h-5" />
             </svg>
-            Refresh
+            {{ t('Refresh') }}
           </Button>
 
           <Button variant="outline" size="sm" @click="scrollToBottom">
@@ -138,7 +139,7 @@ onUnmounted(() => {
               <path d="M12 5v14" />
               <path d="m19 12-7 7-7-7" />
             </svg>
-            Bottom
+            {{ t('Bottom') }}
           </Button>
         </div>
 
@@ -154,14 +155,14 @@ onUnmounted(() => {
               <polyline points="3 6 5 6 21 6" />
               <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
             </svg>
-            Clear
+            {{ t('Clear') }}
           </Button>
         </div>
       </div>
 
       <!-- Log content -->
       <div ref="logContainerRef" class="overflow-auto mx-6 my-3 border border-border rounded-md bg-muted/30">
-        <pre class="p-4 text-xs font-mono whitespace-pre-wrap break-all text-muted-foreground">{{ logs || 'No logs yet...' }}</pre>
+        <pre class="p-4 text-xs font-mono whitespace-pre-wrap break-all text-muted-foreground">{{ logs || t('No logs yet...') }}</pre>
       </div>
 
       <!-- Footer with log path -->

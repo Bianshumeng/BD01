@@ -32,6 +32,7 @@ const props = defineProps<{
   /** bd >= 0.50: parent-child is structural (dot notation), hide parent selector */
   dotNotationParent?: boolean
 }>()
+const { t } = useI18n()
 
 const { beadsPath } = useBeadsPath()
 const { notify } = useNotification()
@@ -184,9 +185,9 @@ const attachFile = async () => {
   const selected = await open({
     multiple: true,
     filters: [
-      { name: 'All supported files', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'md', 'markdown'] },
-      { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'] },
-      { name: 'Markdown', extensions: ['md', 'markdown'] },
+      { name: t('All supported files'), extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp', 'md', 'markdown'] },
+      { name: t('Images'), extensions: ['png', 'jpg', 'jpeg', 'gif', 'webp'] },
+      { name: t('Markdown'), extensions: ['md', 'markdown'] },
     ],
   })
 
@@ -213,10 +214,10 @@ const attachFile = async () => {
     <div class="space-y-3 pb-3 border-b border-border">
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-1.5">
-          <Label for="type" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">Type</Label>
+          <Label for="type" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">{{ t('Type') }}</Label>
           <Select v-model="form.type">
             <SelectTrigger class="h-7 text-xs w-28">
-              <SelectValue placeholder="Type" />
+              <SelectValue :placeholder="t('Type')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -225,17 +226,17 @@ const attachFile = async () => {
                 :value="opt.value"
                 class="text-xs"
               >
-                {{ opt.label }}
+                {{ t(opt.label) }}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div class="flex items-center gap-1.5">
-          <Label for="status" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">Status</Label>
+          <Label for="status" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">{{ t('Status') }}</Label>
           <Select v-model="form.status" :disabled="isNew">
             <SelectTrigger class="h-7 text-xs w-32">
-              <SelectValue placeholder="Status" />
+              <SelectValue :placeholder="t('Status')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -244,17 +245,17 @@ const attachFile = async () => {
                 :value="opt.value"
                 class="text-xs"
               >
-                {{ opt.label }}
+                {{ t(opt.label) }}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div class="flex items-center gap-1.5">
-          <Label for="priority" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">Priority</Label>
+          <Label for="priority" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">{{ t('Priority') }}</Label>
           <Select v-model="form.priority">
             <SelectTrigger class="h-7 text-xs w-36">
-              <SelectValue placeholder="Priority" />
+              <SelectValue :placeholder="t('Priority')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem
@@ -263,21 +264,21 @@ const attachFile = async () => {
                 :value="opt.value"
                 class="text-xs"
               >
-                {{ opt.label }}
+                {{ t(opt.label) }}
               </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div v-if="filteredEpics.length > 0 && form.type !== 'epic' && !dotNotationParent" class="flex items-center gap-1.5">
-          <Label for="parent" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">Parent</Label>
+          <Label for="parent" class="text-[10px] uppercase tracking-wide text-sky-400 whitespace-nowrap">{{ t('Parent') }}</Label>
           <Select v-model="parentSelectValue">
             <SelectTrigger class="h-7 text-xs w-40">
-              <SelectValue placeholder="No parent" />
+              <SelectValue :placeholder="t('No parent')" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="__none__" class="text-xs text-muted-foreground">
-                No parent
+                {{ t('No parent') }}
               </SelectItem>
               <SelectItem
                 v-for="epic in filteredEpics"
@@ -293,11 +294,11 @@ const attachFile = async () => {
       </div>
 
       <div class="space-y-1">
-        <Label for="title" class="text-[10px] uppercase tracking-wide text-sky-400">Title</Label>
+        <Label for="title" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Title') }}</Label>
         <Input
           id="title"
           v-model="form.title"
-          placeholder="Issue title"
+          :placeholder="t('Issue title')"
           required
           class="h-8 text-xs"
         />
@@ -308,28 +309,28 @@ const attachFile = async () => {
     <ScrollArea class="flex-1 min-h-0">
       <div class="space-y-3 py-3">
         <div class="space-y-1">
-          <Label for="description" class="text-[10px] uppercase tracking-wide text-sky-400">Description</Label>
+          <Label for="description" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Description') }}</Label>
           <Textarea
             id="description"
             v-model="form.description"
-            placeholder="Describe the issue..."
+            :placeholder="t('Describe the issue...')"
             rows="3"
             class="text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="assignee" class="text-[10px] uppercase tracking-wide text-sky-400">Assignee</Label>
+          <Label for="assignee" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Assignee') }}</Label>
           <Input
             id="assignee"
             v-model="form.assignee"
-            placeholder="Username"
+            :placeholder="t('Username')"
             class="h-8 text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="labels" class="text-[10px] uppercase tracking-wide text-sky-400">Labels</Label>
+          <Label for="labels" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Labels') }}</Label>
           <LabelMultiSelect
             v-model="form.labels"
             :available-labels="availableLabels || []"
@@ -338,7 +339,7 @@ const attachFile = async () => {
 
         <div class="space-y-1">
           <div class="flex items-center gap-2">
-            <Label for="externalRef" class="text-[10px] uppercase tracking-wide text-sky-400">External Reference</Label>
+            <Label for="externalRef" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('External Reference') }}</Label>
             <Button
               type="button"
               variant="outline"
@@ -347,30 +348,30 @@ const attachFile = async () => {
               @click="attachFile"
             >
               <ImageIcon class="w-3 h-3 mr-1" />
-              Attach
+              {{ t('Attach') }}
             </Button>
           </div>
           <Textarea
             id="externalRef"
             v-model="form.externalRef"
-            placeholder="URLs, IDs, or image paths (pipe-separated)"
+            :placeholder="t('URLs, IDs, or image paths (pipe-separated)')"
             rows="2"
             class="text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="specId" class="text-[10px] uppercase tracking-wide text-sky-400">Spec ID</Label>
+          <Label for="specId" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Spec ID') }}</Label>
           <Input
             id="specId"
             v-model="form.specId"
-            placeholder="e.g. SPEC-001"
+            :placeholder="t('e.g. SPEC-001')"
             class="h-8 text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="estimateMinutes" class="text-[10px] uppercase tracking-wide text-sky-400">Estimate (minutes)</Label>
+          <Label for="estimateMinutes" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Estimate (minutes)') }}</Label>
           <Input
             id="estimateMinutes"
             v-model.number="form.estimateMinutes"
@@ -382,33 +383,33 @@ const attachFile = async () => {
         </div>
 
         <div class="space-y-1">
-          <Label for="designNotes" class="text-[10px] uppercase tracking-wide text-sky-400">Design Notes</Label>
+          <Label for="designNotes" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Design Notes') }}</Label>
           <Textarea
             id="designNotes"
             v-model="form.designNotes"
-            placeholder="Design decisions and architectural notes..."
+            :placeholder="t('Design decisions and architectural notes...')"
             rows="3"
             class="text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="acceptanceCriteria" class="text-[10px] uppercase tracking-wide text-sky-400">Acceptance Criteria</Label>
+          <Label for="acceptanceCriteria" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Acceptance Criteria') }}</Label>
           <Textarea
             id="acceptanceCriteria"
             v-model="form.acceptanceCriteria"
-            placeholder="What must be true for this to be done..."
+            :placeholder="t('What must be true for this to be done...')"
             rows="3"
             class="text-xs"
           />
         </div>
 
         <div class="space-y-1">
-          <Label for="workingNotes" class="text-[10px] uppercase tracking-wide text-sky-400">Working Notes</Label>
+          <Label for="workingNotes" class="text-[10px] uppercase tracking-wide text-sky-400">{{ t('Working Notes') }}</Label>
           <Textarea
             id="workingNotes"
             v-model="form.workingNotes"
-            placeholder="Progress notes and observations..."
+            :placeholder="t('Progress notes and observations...')"
             rows="3"
             class="text-xs"
           />
@@ -419,14 +420,14 @@ const attachFile = async () => {
     <!-- Footer fixe: boutons -->
     <div class="flex justify-end gap-2 pt-3 border-t border-border">
       <Button type="button" variant="outline" size="sm" class="h-7 text-xs" :disabled="isSaving" @click="$emit('cancel')">
-        Cancel
+        {{ t('Cancel') }}
       </Button>
       <Button type="submit" size="sm" class="h-7 text-xs" :disabled="isSaving">
         <svg v-if="isSaving" class="animate-spin -ml-1 mr-1.5 h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        {{ isSaving ? 'Saving...' : (isNew ? 'Create' : 'Save') }}
+        {{ isSaving ? t('Saving...') : (isNew ? t('Create') : t('Save')) }}
       </Button>
     </div>
   </form>

@@ -5,6 +5,7 @@ import { openUrl } from '~/utils/open-url'
 
 const { isSyncing: isForceSyncing, forceSync, syncMessage, lastSyncSuccess } = useSyncStatus()
 const { beadsPath } = useBeadsPath()
+const { t } = useI18n()
 
 const props = defineProps<{
   isOpen: boolean
@@ -122,7 +123,7 @@ const fetchLogs = async () => {
       })
     }
   } catch (e) {
-    console.error('Failed to fetch logs:', e)
+    console.error(t('Failed to fetch logs:'), e)
   }
 }
 
@@ -132,7 +133,7 @@ const handleClearLogs = async () => {
     await clearLogs()
     logs.value = ''
   } catch (e) {
-    console.error('Failed to clear logs:', e)
+    console.error(t('Failed to clear logs:'), e)
   } finally {
     isLoading.value = false
   }
@@ -178,7 +179,7 @@ const exportLogs = async () => {
       }, 5000)
     }
   } catch (e) {
-    console.error('Failed to export logs:', e)
+    console.error(t('Failed to export logs:'), e)
   }
 }
 
@@ -235,7 +236,7 @@ onUnmounted(() => {
     <!-- Header -->
     <div class="flex items-center justify-between gap-2 px-4 py-2 border-b border-border bg-muted/30">
       <div class="flex items-center gap-2">
-        <span class="text-sm font-medium">Debug Logs</span>
+        <span class="text-sm font-medium">{{ t('Debug Logs') }}</span>
 
         <Button
           variant="outline"
@@ -255,15 +256,15 @@ onUnmounted(() => {
             <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
             <path d="M21 3v5h-5" />
           </svg>
-          {{ isAutoRefresh ? 'Live' : 'Paused' }}
+          {{ isAutoRefresh ? t('Live') : t('Paused') }}
         </Button>
 
         <Button variant="outline" size="sm" class="h-7 px-2" :disabled="isAutoRefresh" @click="fetchLogs">
-          Refresh
+          {{ t('Refresh') }}
         </Button>
 
         <Button variant="outline" size="sm" class="h-7 px-2" @click="scrollToBottom">
-          Bottom
+          {{ t('Bottom') }}
         </Button>
 
         <Button
@@ -273,7 +274,7 @@ onUnmounted(() => {
           :class="isVerbose ? 'border-amber-500 text-amber-500' : ''"
           @click="toggleVerbose"
         >
-          Verbose {{ isVerbose ? 'ON' : 'OFF' }}
+          {{ t('Verbose') }} {{ isVerbose ? t('ON') : t('OFF') }}
         </Button>
 
         <Button
@@ -283,7 +284,7 @@ onUnmounted(() => {
           :disabled="isLoading"
           @click="handleClearLogs"
         >
-          Clear
+          {{ t('Clear') }}
         </Button>
 
         <Button
@@ -293,7 +294,7 @@ onUnmounted(() => {
           class="h-7 px-2"
           @click="exportLogs"
         >
-          Export
+          {{ t('Export') }}
         </Button>
         <span v-if="exportedPath" class="text-xs text-green-500 truncate max-w-[300px]" :title="exportedPath">{{ exportedPath }}</span>
 
@@ -318,7 +319,7 @@ onUnmounted(() => {
             <path d="M12 12v9" />
             <path d="m8 17 4 4 4-4" />
           </svg>
-          {{ isForceSyncing ? 'Syncing...' : 'Force Sync' }}
+          {{ isForceSyncing ? t('Syncing...') : t('Force Sync') }}
         </Button>
         <span v-if="syncMessage && lastSyncSuccess" class="text-green-500 text-xs ml-1">{{ syncMessage }}</span>
       </div>
@@ -327,7 +328,7 @@ onUnmounted(() => {
         <button
           v-if="bdCliUpdate?.hasUpdate"
           class="flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-green-500 transition-colors cursor-pointer"
-          :title="`Update available: v${bdCliUpdate.latestVersion} — click to view`"
+          :title="t('Update available: v{version} — click to view', { version: bdCliUpdate.latestVersion })"
           @click="openUrl(bdCliUpdate.releaseUrl)"
         >
           {{ bdVersion }}
@@ -339,13 +340,13 @@ onUnmounted(() => {
         <button
           v-else-if="bdCliUpdate"
           class="text-xs font-medium text-foreground hover:text-primary transition-colors cursor-pointer"
-          title="View bd CLI releases"
+          :title="t('View bd CLI releases')"
           @click="openUrl(bdCliUpdate.releaseUrl)"
         >
           {{ bdVersion }}
         </button>
         <span v-else class="text-xs font-medium text-foreground">{{ bdVersion }}</span>
-        <span v-if="projectUsesDolt" class="text-[#29E3C1] flex items-center" title="This project uses the Dolt backend">
+        <span v-if="projectUsesDolt" class="text-[#29E3C1] flex items-center" :title="t('This project uses the Dolt backend')">
           <svg class="w-8 h-3" viewBox="0 0 163 56" fill="none">
             <path d="M28.87 7.0459V45.8632C28.8654 46.7997 28.498 47.6965 27.8476 48.3591C27.1971 49.0217 26.316 49.3964 25.3957 49.402H10.4953C9.5713 49.402 8.68489 49.0298 8.0299 48.3666C7.3749 47.7035 7.00462 46.8034 7 45.8632V24.7722C7.00462 23.832 7.3749 22.9319 8.0299 22.2688C8.68489 21.6056 9.5713 21.2334 10.4953 21.2334H22.2115" stroke="currentColor" stroke-width="12.6599" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M156.3 49.4019H145.283" stroke="currentColor" stroke-width="12.6599" stroke-linecap="round" stroke-linejoin="round"/>
@@ -371,7 +372,7 @@ onUnmounted(() => {
     <!-- Log content -->
     <div ref="logContainerRef" class="flex-1 overflow-auto bg-muted/10" @scroll="onScroll">
       <pre v-if="logs" class="p-3 text-[11px] font-mono whitespace-pre-wrap break-all leading-relaxed" v-html="colorizedLogs"></pre>
-      <pre v-else class="p-3 text-[11px] font-mono text-muted-foreground">No logs yet...</pre>
+      <pre v-else class="p-3 text-[11px] font-mono text-muted-foreground">{{ t('No logs yet...') }}</pre>
     </div>
   </div>
 </template>

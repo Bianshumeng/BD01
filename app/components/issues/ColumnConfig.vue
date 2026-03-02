@@ -18,6 +18,7 @@ import { Button } from '~/components/ui/button'
 const props = defineProps<{
   columns: ColumnConfig[]
 }>()
+const { t } = useI18n()
 
 const emit = defineEmits<{
   'update:columns': [columns: ColumnConfig[]]
@@ -50,13 +51,13 @@ const handleToggle = (columnId: string, checked: boolean) => {
               <rect x="14" y="14" width="7" height="7" />
               <rect x="3" y="14" width="7" height="7" />
             </svg>
-            <span class="sr-only">Column settings</span>
+            <span class="sr-only">{{ t('Column settings') }}</span>
           </Button>
         </DropdownMenuTrigger>
       </TooltipTrigger>
-      <TooltipContent>Column settings</TooltipContent>
+      <TooltipContent>{{ t('Column settings') }}</TooltipContent>
     <DropdownMenuContent align="end" class="w-48">
-      <DropdownMenuLabel class="text-xs">Visible Columns</DropdownMenuLabel>
+      <DropdownMenuLabel class="text-xs">{{ t('Visible Columns') }}</DropdownMenuLabel>
       <DropdownMenuSeparator />
       <DropdownMenuCheckboxItem
         v-for="column in columns"
@@ -65,12 +66,12 @@ const handleToggle = (columnId: string, checked: boolean) => {
         class="text-xs [&_svg]:text-green-500"
         @update:model-value="handleToggle(column.id, $event)"
       >
-        {{ column.label }}
+        {{ t(column.label) }}
       </DropdownMenuCheckboxItem>
       <DropdownMenuSeparator />
       <div class="p-1">
         <Button variant="ghost" size="sm" class="w-full text-xs h-7 justify-start" @click="emit('reset')">
-          Reset to defaults
+          {{ t('Reset to defaults') }}
         </Button>
       </div>
     </DropdownMenuContent>

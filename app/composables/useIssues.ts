@@ -83,17 +83,18 @@ export function useEpicExpand() {
  */
 function notifyStatusTransitions(oldIssues: Issue[], newIssues: Issue[]) {
   const { success: notifySuccess } = useNotification()
+  const { t } = useI18n()
   const oldStatusMap = new Map(oldIssues.map(i => [i.id, { status: i.status, title: i.title }]))
 
   for (const issue of newIssues) {
     const old = oldStatusMap.get(issue.id)
     if (old && old.status !== issue.status) {
       if (issue.status === 'closed') {
-        notifySuccess(`Issue ${issue.id} closed`, issue.title)
+        notifySuccess(t('Issue {id} closed', { id: issue.id }), issue.title)
       } else if (issue.status === 'tombstone') {
-        notifySuccess(`Issue ${issue.id} deleted`, old.title)
+        notifySuccess(t('Issue {id} deleted', { id: issue.id }), old.title)
       } else if (old.status === 'closed') {
-        notifySuccess(`Issue ${issue.id} reopened`, issue.title)
+        notifySuccess(t('Issue {id} reopened', { id: issue.id }), issue.title)
       }
     }
   }
@@ -102,7 +103,7 @@ function notifyStatusTransitions(oldIssues: Issue[], newIssues: Issue[]) {
   const newIds = new Set(newIssues.map(i => i.id))
   for (const old of oldIssues) {
     if (!newIds.has(old.id)) {
-      notifySuccess(`Issue ${old.id} deleted`, old.title)
+      notifySuccess(t('Issue {id} deleted', { id: old.id }), old.title)
     }
   }
 }

@@ -18,6 +18,7 @@ const props = defineProps<{
   selectedPriorities: IssuePriority[]
   open?: boolean
 }>()
+const { t } = useI18n()
 
 defineEmits<{
   toggle: [priority: IssuePriority]
@@ -50,7 +51,7 @@ const isSelected = (priority: IssuePriority) => props.selectedPriorities.include
             >
               <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
             </svg>
-            Priority
+            {{ t('Priority') }}
             <span
               v-if="selectedPriorities.length > 0"
               class="ml-0.5 rounded-full bg-primary text-primary-foreground text-[10px] px-1.5 min-w-[18px] text-center"
@@ -60,7 +61,7 @@ const isSelected = (priority: IssuePriority) => props.selectedPriorities.include
           </Button>
         </DropdownMenuTrigger>
       </TooltipTrigger>
-      <TooltipContent>Filter by priority</TooltipContent>
+      <TooltipContent>{{ t('Filter by priority') }}</TooltipContent>
       <DropdownMenuContent align="start" class="w-36">
       <DropdownMenuCheckboxItem
         v-for="opt in priorityOptions"
