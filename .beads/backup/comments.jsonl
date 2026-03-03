@@ -1,1 +1,2 @@
 {"author":"Bianshumeng","created_at":"2026-03-03T18:19:08Z","id":1,"issue_id":"BTS-nui","text":"多Agent审查完成：4个Agent并行输出，发现安全配置、Rust命令执行边界、测试门禁与前端可访问性问题。已附带文件行号与修复建议。"}
+{"author":"Bianshumeng","created_at":"2026-03-03T18:41:18Z","id":2,"issue_id":"BTS-86q","text":"已完成：1) 收紧Tauri权限与CSP（移除shell:allow-execute，区分csp/devCsp）；2) 限制CLI客户端仅bd/br别名；3) 附件路径校验改为canonical+组件判断并在delete场景校验项目根；4) 新增CI工作流，加入typecheck与覆盖率测试门禁；5) release工作流安装改为--frozen-lockfile。验证：pnpm typecheck、pnpm test、pnpm test:ci、cargo check均通过。"}
