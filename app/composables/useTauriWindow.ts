@@ -16,9 +16,22 @@ export function useTauriWindow() {
     }
   }
 
-  const setWindowTitle = (title: string) => {
-    if (windowModule) {
-      windowModule.getCurrentWindow().setTitle(title)
+  const setWindowTitle = async (title: string) => {
+    if (!windowModule)
+      return
+
+    const window = windowModule.getCurrentWindow()
+    await window.setTitle(title)
+
+    // On Windows with Tauri >= 2.3.1, title text may not repaint immediately
+    // until window decorations are toggled. Keep this workaround client-side only.
+    if (import.meta.client && navigator.userAgent.includes('Windows')) {
+      const isDecorated = await window.isDecorated()
+      if (isDecorated) {
+        await window.setDecorations(false)
+        await new Promise(resolve => setTimeout(resolve, 100))
+        await window.setDecorations(true)
+      }
     }
   }
 

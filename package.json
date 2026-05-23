@@ -33,7 +33,9 @@
     "tauri:dev": "cargo tauri dev",
     "tauri:build": "cargo tauri build",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:ci": "vitest run --coverage",
+    "typecheck": "nuxi typecheck"
   },
   "dependencies": {
     "@tanstack/vue-table": "^8.21.3",
@@ -56,6 +58,7 @@
     "vue-sonner": "^2.0.9"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^4.0.18",
     "@tailwindcss/vite": "^4.1.18",
     "@tauri-apps/cli": "^2.9.6",
     "@types/dompurify": "^3.2.0",

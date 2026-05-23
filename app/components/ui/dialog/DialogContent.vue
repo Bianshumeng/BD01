@@ -22,7 +22,7 @@ const props = withDefaults(defineProps<DialogContentProps & { class?: HTMLAttrib
 const emits = defineEmits<DialogContentEmits>()
 const { t } = useI18n()
 
-const delegatedProps = reactiveOmit(props, "class")
+const delegatedProps = reactiveOmit(props, "class", "showCloseButton")
 
 const forwarded = useForwardPropsEmits(delegatedProps, emits)
 </script>

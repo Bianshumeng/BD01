@@ -30,14 +30,28 @@ const attachedImages = ref<AttachmentFile[]>([])
 const attachedMarkdown = ref<AttachmentFile[]>([])
 
 const loadAttachments = async () => {
-  if (!props.issue?.id) return
-  const result = await listAttachments(props.issue.id)
-  attachedImages.value = result.images
-  attachedMarkdown.value = result.markdown
+  if (!props.issue?.id) {
+    attachedImages.value = []
+    attachedMarkdown.value = []
+    return
+  }
+
+  try {
+    const result = await listAttachments(props.issue.id)
+    attachedImages.value = result.images
+    attachedMarkdown.value = result.markdown
+  } catch (error) {
+    // Keep the preview stable when filesystem access fails.
+    attachedImages.value = []
+    attachedMarkdown.value = []
+    console.error('Failed to load attachments:', error)
+  }
 }
 
 // Reload when issue changes (watch the whole object so fetchIssue triggers reload)
-watch(() => props.issue, () => loadAttachments(), { immediate: true })
+watch(() => props.issue?.id, () => {
+  void loadAttachments()
+}, { immediate: true })
 
 // Total attachment count (images + markdown)
 const totalAttachments = computed(() => attachedImages.value.length + attachedMarkdown.value.length)
@@ -291,16 +305,31 @@ const isSpecIdOpen = computed(() => previewSections.value.specId)
 // Relations helpers
 const relationTypeLabels: Record<string, string> = {
   'relates-to': 'Relates To',
-  'related': 'Related',
+  related: 'Related',
   'discovered-from': 'Discovered From',
-  'duplicates': 'Duplicates',
-  'supersedes': 'Supersedes',
+  duplicates: 'Duplicates',
+  supersedes: 'Supersedes',
   'caused-by': 'Caused By',
+  'blocked-by': 'Blocked By',
+  blocks: 'Blocks',
+  'depends-on': 'Depends On',
+  'required-by': 'Required By',
+  references: 'References',
+  'replies-to': 'Replies To',
+  'parent-of': 'Parent Of',
+  'child-of': 'Child Of',
 }
 
 const getRelationLabel = (type: string): string => {
+  const mapped = relationTypeLabels[type] || type
+  const translatedMapped = t(mapped)
+  if (translatedMapped !== mapped) return translatedMapped
+
+  if (relationTypeLabels[type]) return mapped
+
   const fallback = type.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-  return t(relationTypeLabels[type] || fallback)
+  const translatedFallback = t(fallback)
+  return translatedFallback
 }
 
 const hasRelations = computed(() => (props.issue.relations?.length ?? 0) > 0)

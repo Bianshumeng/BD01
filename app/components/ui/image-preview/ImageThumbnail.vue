@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { readImageFile } from '~/utils/open-url'
 import { isUrl } from '~/utils/markdown'
@@ -22,11 +22,17 @@ const emit = defineEmits<{
 const imageDataUrl = ref<string | null>(null)
 const isLoading = ref(true)
 const hasError = ref(false)
+const loadToken = ref(0)
 
 // Check if src is a URL (http/https)
 const isRemoteUrl = computed(() => isUrl(props.src))
 
-onMounted(async () => {
+const loadImage = async () => {
+  const token = ++loadToken.value
+  imageDataUrl.value = null
+  isLoading.value = true
+  hasError.value = false
+
   // For URLs, use directly without loading via backend
   if (isRemoteUrl.value) {
     imageDataUrl.value = props.src
@@ -34,24 +40,30 @@ onMounted(async () => {
     return
   }
 
-  await loadImage()
-})
-
-const loadImage = async () => {
   // src is already an absolute path (resolved by useAttachments)
   const fullPath = props.src
   try {
     const imageData = await readImageFile(fullPath)
+    if (token !== loadToken.value) return
+
     if (imageData) {
       imageDataUrl.value = `data:${imageData.mimeType};base64,${imageData.base64}`
     } else {
       hasError.value = true
     }
   } catch {
+    if (token !== loadToken.value) return
     hasError.value = true
+  } finally {
+    if (token === loadToken.value) {
+      isLoading.value = false
+    }
   }
-  isLoading.value = false
 }
+
+watch(() => props.src, () => {
+  void loadImage()
+}, { immediate: true })
 
 const handleRemove = (event: Event) => {
   event.stopPropagation()
@@ -62,6 +74,8 @@ const handleRemove = (event: Event) => {
 const handleImageError = () => {
   if (isRemoteUrl.value) {
     hasError.value = true
+    isLoading.value = false
+    imageDataUrl.value = null
   }
 }
 </script>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount } from 'vue'
 import { X, Plus } from 'lucide-vue-next'
 import LabelBadge from '~/components/issues/LabelBadge.vue'
 
@@ -19,6 +19,13 @@ const searchQuery = ref('')
 const isOpen = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
 const containerRef = ref<HTMLDivElement | null>(null)
+let blurCloseTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearBlurCloseTimer = () => {
+  if (!blurCloseTimer) return
+  clearTimeout(blurCloseTimer)
+  blurCloseTimer = null
+}
 
 // Filter available labels based on search, excluding already selected
 const filteredLabels = computed(() => {
@@ -41,6 +48,7 @@ const showCreateOption = computed(() => {
 })
 
 const handleSelect = (label: string) => {
+  clearBlurCloseTimer()
   if (!props.modelValue.includes(label)) {
     emit('update:modelValue', [...props.modelValue, label])
   }
@@ -49,6 +57,7 @@ const handleSelect = (label: string) => {
 }
 
 const handleCreateNew = () => {
+  clearBlurCloseTimer()
   const newLabel = searchQuery.value.trim()
   if (newLabel && !props.modelValue.includes(newLabel)) {
     emit('update:modelValue', [...props.modelValue, newLabel])
@@ -62,6 +71,7 @@ const handleRemove = (label: string) => {
 }
 
 const handleInputFocus = () => {
+  clearBlurCloseTimer()
   isOpen.value = true
 }
 
@@ -72,9 +82,11 @@ const handleInputBlur = (e: FocusEvent) => {
     return
   }
   // Delay closing to allow click events on dropdown items
-  setTimeout(() => {
+  clearBlurCloseTimer()
+  blurCloseTimer = setTimeout(() => {
     isOpen.value = false
     searchQuery.value = ''
+    blurCloseTimer = null
   }, 150)
 }
 
@@ -83,10 +95,15 @@ const handleKeydown = (e: KeyboardEvent) => {
     e.preventDefault()
     handleCreateNew()
   } else if (e.key === 'Escape') {
+    clearBlurCloseTimer()
     isOpen.value = false
     searchQuery.value = ''
   }
 }
+
+onBeforeUnmount(() => {
+  clearBlurCloseTimer()
+})
 </script>
 
 <template>

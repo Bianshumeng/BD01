@@ -20,8 +20,8 @@
 > Requires **bd 0.49.x**. Recommended CLI: **br 0.1.14**.
 
 ### Fixes
-- **Toast notifications unreadable in light theme** (#8): Added theme-aware backgrounds (light pastel tones in light mode, original dark backgrounds preserved in dark mode) and adjusted icon contrast. Increased default display duration from 3s to 5s
-- **No window title on Windows** (#9): Set default window title to "Beads Task-Issue Tracker" and dynamically update it with the current project name for Windows task switchers (PowerToys Run, Flow Launcher, Switcheroo, etc.)
+- **Toast notifications unreadable in light theme** (#8/#54): Added theme-aware backgrounds (light pastel tones in light mode, original dark backgrounds preserved in dark mode), adjusted icon contrast, and kept notification text and metadata legible. Increased default display duration from 3s to 5s
+- **No window title on Windows** (#9/#53): Set default window title to "Beads Task-Issue Tracker", dynamically update it with the current project name for Windows task switchers (PowerToys Run, Flow Launcher, Switcheroo, etc.), and apply a Tauri Windows repaint workaround
 
 ## [1.24.1] - 2026-02-27
 

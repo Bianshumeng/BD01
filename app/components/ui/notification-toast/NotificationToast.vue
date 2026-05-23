@@ -7,22 +7,22 @@ const { notifications, dismiss } = useNotification()
 const typeStyles: Record<NotificationType, { bg: string; border: string; icon: string }> = {
   info: {
     bg: 'bg-sky-50 dark:bg-[#0a1929]',
-    border: 'border-sky-500',
+    border: 'border-sky-200 dark:border-sky-500',
     icon: 'text-sky-600 dark:text-sky-400',
   },
   success: {
     bg: 'bg-emerald-50 dark:bg-[#071a12]',
-    border: 'border-emerald-500',
+    border: 'border-emerald-200 dark:border-emerald-500',
     icon: 'text-emerald-600 dark:text-emerald-400',
   },
   error: {
     bg: 'bg-red-50 dark:bg-[#1f0a0a]',
-    border: 'border-red-500',
+    border: 'border-red-200 dark:border-red-500',
     icon: 'text-red-600 dark:text-red-400',
   },
   warning: {
     bg: 'bg-amber-50 dark:bg-[#1a1408]',
-    border: 'border-amber-500',
+    border: 'border-amber-200 dark:border-amber-500',
     icon: 'text-amber-600 dark:text-amber-400',
   },
 }
@@ -54,7 +54,7 @@ const getIcon = (type: NotificationType) => {
           />
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-foreground">{{ notification.message }}</p>
-            <p v-if="notification.description" class="text-xs text-muted-foreground mt-0.5 truncate">
+            <p v-if="notification.description" class="text-xs text-slate-600 dark:text-slate-300 mt-0.5 truncate">
               {{ notification.description }}
             </p>
           </div>

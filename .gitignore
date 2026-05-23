@@ -36,3 +36,7 @@ coverage
 # Build cache
 .temp
 *.cache
+
+# Dolt database files (added by bd init)
+.dolt/
+*.db

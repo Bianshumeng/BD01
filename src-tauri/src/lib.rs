@@ -4,7 +4,7 @@ use tauri::Emitter;
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{LazyLock, Mutex};
@@ -457,6 +457,52 @@ fn normalize_issue_status(status: &str) -> String {
     }
 }
 
+/// Restrict frontend-configurable CLI binary to known safe aliases.
+/// We intentionally reject custom paths to prevent arbitrary executable swaps.
+fn normalize_cli_binary_alias(binary: &str) -> Option<String> {
+    match binary.trim().to_ascii_lowercase().as_str() {
+        "bd" | "bd.exe" => Some("bd".to_string()),
+        "br" | "br.exe" => Some("br".to_string()),
+        _ => None,
+    }
+}
+
+/// Returns true when path contains `/.beads/attachments/` as path components
+/// (cross-platform, without string separator assumptions).
+fn is_inside_beads_attachments(path: &Path) -> bool {
+    let components: Vec<String> = path
+        .components()
+        .map(|c| c.as_os_str().to_string_lossy().to_string())
+        .collect();
+
+    for i in 0..components.len().saturating_sub(1) {
+        if components[i] == ".beads" && components[i + 1] == "attachments" {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Canonicalize and verify a path lives inside a `.beads/attachments` tree.
+fn canonicalize_attachment_path(path: &Path, op_name: &str) -> Result<PathBuf, String> {
+    let canonical = path
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve path: {}", e))?;
+
+    if !is_inside_beads_attachments(&canonical) {
+        log_warn!(
+            "[{}] Refusing to access file outside attachments: {} (resolved: {})",
+            op_name,
+            path.display(),
+            canonical.display()
+        );
+        return Err("Can only access files inside .beads/attachments/".to_string());
+    }
+
+    Ok(canonical)
+}
+
 fn transform_issue(raw: BdRawIssue) -> Issue {
     // Parent info - dependencies array now contains relationship info, not full issue details
     // For now, we just use the parent ID if available
@@ -799,8 +845,17 @@ fn load_config() -> AppConfig {
     let path = get_config_path();
     if path.exists() {
         match fs::read_to_string(&path) {
-            Ok(content) => match serde_json::from_str(&content) {
-                Ok(config) => return config,
+            Ok(content) => match serde_json::from_str::<AppConfig>(&content) {
+                Ok(mut config) => {
+                    if let Some(normalized) = normalize_cli_binary_alias(&config.cli_binary) {
+                        config.cli_binary = normalized;
+                        return config;
+                    }
+                    log::warn!(
+                        "[config] Invalid cli_binary '{}' in settings.json, fallback to default",
+                        config.cli_binary
+                    );
+                }
                 Err(e) => log::warn!("[config] Failed to parse settings.json: {}", e),
             },
             Err(e) => log::warn!("[config] Failed to read settings.json: {}", e),
@@ -3619,7 +3674,13 @@ async fn get_cli_binary_path() -> String {
 
 #[tauri::command]
 async fn set_cli_binary_path(path: String) -> Result<String, String> {
-    let binary = if path.trim().is_empty() { "bd".to_string() } else { path.trim().to_string() };
+    let requested = if path.trim().is_empty() {
+        "bd".to_string()
+    } else {
+        path.trim().to_string()
+    };
+    let binary = normalize_cli_binary_alias(&requested)
+        .ok_or_else(|| "Only 'bd' or 'br' are allowed as CLI client".to_string())?;
 
     // Validate the binary first
     let version = validate_cli_binary_internal(&binary)?;
@@ -3644,17 +3705,10 @@ async fn validate_cli_binary(path: String) -> Result<String, String> {
 }
 
 fn validate_cli_binary_internal(binary: &str) -> Result<String, String> {
-    // Security: reject shell metacharacters — Command::new() doesn't use a shell,
-    // but defense-in-depth prevents any future misuse
-    let forbidden = [';', '|', '&', '$', '`', '>', '<', '(', ')', '{', '}', '!', '\n', '\r'];
-    if binary.chars().any(|c| forbidden.contains(&c)) {
-        return Err("Invalid binary path: contains shell metacharacters".to_string());
-    }
-    if binary.contains("..") {
-        return Err("Invalid binary path: directory traversal not allowed".to_string());
-    }
+    let normalized = normalize_cli_binary_alias(binary)
+        .ok_or_else(|| "Only 'bd' or 'br' are allowed as CLI client".to_string())?;
 
-    match new_command(binary)
+    match new_command(&normalized)
         .arg("--version")
         .env("PATH", get_extended_path())
         .output()
@@ -3662,17 +3716,17 @@ fn validate_cli_binary_internal(binary: &str) -> Result<String, String> {
         Ok(output) if output.status.success() => {
             let version = String::from_utf8_lossy(&output.stdout).trim().to_string();
             if version.is_empty() {
-                Err(format!("'{}' returned empty version output", binary))
+                Err(format!("'{}' returned empty version output", normalized))
             } else {
                 Ok(version)
             }
         }
         Ok(output) => {
             let stderr = String::from_utf8_lossy(&output.stderr).trim().to_string();
-            Err(format!("'{}' failed: {}", binary, if stderr.is_empty() { "unknown error".to_string() } else { stderr }))
+            Err(format!("'{}' failed: {}", normalized, if stderr.is_empty() { "unknown error".to_string() } else { stderr }))
         }
         Err(e) => {
-            Err(format!("'{}' not found or not executable: {}", binary, e))
+            Err(format!("'{}' not found or not executable: {}", normalized, e))
         }
     }
 }
@@ -3695,20 +3749,15 @@ async fn open_image_file(path: String) -> Result<(), String> {
         return Err(format!("File not found: {}", path));
     }
 
-    // Security: Canonicalize to resolve symlinks/.. and verify inside .beads/attachments/
-    let canonical = std::path::Path::new(&path).canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
-    let canonical_str = canonical.to_string_lossy();
-    if !canonical_str.contains("/.beads/attachments/") {
-        log_warn!("[open_image_file] Refusing to open file outside attachments: {} (resolved: {})", path, canonical_str);
-        return Err("Can only open files inside .beads/attachments/".to_string());
-    }
+    // Security: Canonicalize and verify path is under a `.beads/attachments` tree.
+    let canonical = canonicalize_attachment_path(std::path::Path::new(&path), "open_image_file")?;
+    let canonical_path = canonical.to_string_lossy().to_string();
 
     // Use platform-specific command to open file with default application
     #[cfg(target_os = "macos")]
     {
         Command::new("open")
-            .arg(&path)
+            .arg(&canonical_path)
             .spawn()
             .map_err(|e| format!("Failed to open file: {}", e))?;
     }
@@ -3716,7 +3765,7 @@ async fn open_image_file(path: String) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         new_command("cmd")
-            .args(["/C", "start", "", &path])
+            .args(["/C", "start", "", &canonical_path])
             .spawn()
             .map_err(|e| format!("Failed to open file: {}", e))?;
     }
@@ -3724,7 +3773,7 @@ async fn open_image_file(path: String) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
         Command::new("xdg-open")
-            .arg(&path)
+            .arg(&canonical_path)
             .spawn()
             .map_err(|e| format!("Failed to open file: {}", e))?;
     }
@@ -3772,17 +3821,11 @@ async fn read_image_file(path: String) -> Result<ImageData, String> {
         return Err(format!("File not found: {}", path));
     }
 
-    // Security: Canonicalize to resolve symlinks/.. and verify inside .beads/attachments/
-    let canonical = std::path::Path::new(&path).canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
-    let canonical_str = canonical.to_string_lossy();
-    if !canonical_str.contains("/.beads/attachments/") {
-        log_warn!("[read_image_file] Refusing to read file outside attachments: {} (resolved: {})", path, canonical_str);
-        return Err("Can only read files inside .beads/attachments/".to_string());
-    }
+    // Security: Canonicalize and verify path is under a `.beads/attachments` tree.
+    let canonical = canonicalize_attachment_path(std::path::Path::new(&path), "read_image_file")?;
 
     // Read file and encode as base64
-    let data = fs::read(&path).map_err(|e| format!("Failed to read file: {}", e))?;
+    let data = fs::read(&canonical).map_err(|e| format!("Failed to read file: {}", e))?;
     let base64 = base64_encode(&data);
 
     Ok(ImageData { base64, mime_type })
@@ -4347,12 +4390,13 @@ async fn delete_attachment(project_path: String, issue_id: String, filename: Str
         return Ok(());
     }
 
-    // Security: verify file is inside .beads/attachments/
-    let canonical = file_path.canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
-    let canonical_str = canonical.to_string_lossy();
-    if !canonical_str.contains("/.beads/attachments/") {
-        return Err("Can only delete files inside .beads/attachments/".to_string());
+    // Security: verify file is inside this project's attachments root.
+    let attachments_root = attachments_dir
+        .canonicalize()
+        .map_err(|e| format!("Failed to resolve attachments root: {}", e))?;
+    let canonical = canonicalize_attachment_path(&file_path, "delete_attachment")?;
+    if !canonical.starts_with(&attachments_root) {
+        return Err("Can only delete files inside this project's .beads/attachments/".to_string());
     }
 
     fs::remove_file(&file_path)
@@ -4401,17 +4445,11 @@ async fn read_text_file(path: String) -> Result<TextData, String> {
         return Err(format!("File not found: {}", path));
     }
 
-    // Security: Canonicalize to resolve symlinks/.. and verify inside .beads/attachments/
-    let canonical = std::path::Path::new(&path).canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
-    let canonical_str = canonical.to_string_lossy();
-    if !canonical_str.contains("/.beads/attachments/") {
-        log_warn!("[read_text_file] Refusing to read file outside attachments: {} (resolved: {})", path, canonical_str);
-        return Err("Can only read files inside .beads/attachments/".to_string());
-    }
+    // Security: Canonicalize and verify path is under a `.beads/attachments` tree.
+    let canonical = canonicalize_attachment_path(std::path::Path::new(&path), "read_text_file")?;
 
     // Read file as UTF-8
-    let content = fs::read_to_string(&path)
+    let content = fs::read_to_string(&canonical)
         .map_err(|e| format!("Failed to read file: {}", e))?;
 
     Ok(TextData { content })
@@ -4434,17 +4472,11 @@ async fn write_text_file(path: String, content: String) -> Result<(), String> {
         return Err(format!("File not found: {}", path));
     }
 
-    // Security: Canonicalize to resolve symlinks/.. and verify inside .beads/attachments/
-    let canonical = std::path::Path::new(&path).canonicalize()
-        .map_err(|e| format!("Failed to resolve path: {}", e))?;
-    let canonical_str = canonical.to_string_lossy();
-    if !canonical_str.contains("/.beads/attachments/") {
-        log_warn!("[write_text_file] Refusing to write file outside attachments: {} (resolved: {})", path, canonical_str);
-        return Err("Can only write files inside .beads/attachments/".to_string());
-    }
+    // Security: Canonicalize and verify path is under a `.beads/attachments` tree.
+    let canonical = canonicalize_attachment_path(std::path::Path::new(&path), "write_text_file")?;
 
     // Write content to file
-    fs::write(&path, &content)
+    fs::write(&canonical, &content)
         .map_err(|e| format!("Failed to write file: {}", e))?;
 
     log_info!("[write_text_file] Written {} bytes to {}", content.len(), path);
@@ -4699,8 +4731,20 @@ async fn launch_probe(port: u16) -> Result<String, String> {
         }
     }
 
-    // Determine binary: BEADS_PROBE_BIN env var, fallback to "beads-probe"
-    let bin = env::var("BEADS_PROBE_BIN").unwrap_or_else(|_| "beads-probe".to_string());
+    // Determine binary with strict allowlist: only beads-probe aliases are accepted.
+    let bin = match env::var("BEADS_PROBE_BIN") {
+        Ok(value) => match value.trim().to_ascii_lowercase().as_str() {
+            "beads-probe" | "beads-probe.exe" => "beads-probe".to_string(),
+            _ => {
+                log_warn!(
+                    "[probe] Ignoring unsafe BEADS_PROBE_BIN value '{}', fallback to beads-probe",
+                    value
+                );
+                "beads-probe".to_string()
+            }
+        },
+        Err(_) => "beads-probe".to_string(),
+    };
     log_info!("[probe] Launching: {} --port {}", bin, port);
 
     let child = Command::new(&bin)
