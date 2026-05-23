@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.24.4] - 2026-04-08
+
+> Requires **bd 0.49.x**. Recommended CLI: **br** up to 0.1.33.
+
+### Fixes
+- **br list not displaying issues since br 0.1.30** (#18): `br list --json` now returns a paginated JSON envelope (`{ items: [...], total, page, per_page }`) instead of a flat array. Added envelope detection in both the Rust backend and Nuxt API layer to unwrap the new format while remaining backward-compatible with older br versions
+
+## [1.24.3] - 2026-04-06
+
+> Requires **bd 0.49.x**. Recommended CLI: **br 0.1.14**.
+
+### Fixes
+- **Cross-platform log path** (#15): `get_log_path()` was hardcoded to macOS `~/Library/Logs/`. Now uses platform-aware paths — Linux resolves to `~/.local/share/com.beads.manager/logs/beads.log` (XDG), Windows to `%APPDATA%/com.beads.manager/logs/beads.log`
+- **Cross-platform PATH resolution** (#15): `get_extended_path()` used Unix-only `HOME` variable and `:` separator. Now uses `USERPROFILE`/`LOCALAPPDATA` and `;` separator on Windows, with appropriate search paths per platform
+
+## [1.24.2] - 2026-03-03
+
+> Requires **bd 0.49.x**. Recommended CLI: **br 0.1.14**.
+
+### Fixes
+- **Toast notifications unreadable in light theme** (#8): Added theme-aware backgrounds (light pastel tones in light mode, original dark backgrounds preserved in dark mode) and adjusted icon contrast. Increased default display duration from 3s to 5s
+- **No window title on Windows** (#9): Set default window title to "Beads Task-Issue Tracker" and dynamically update it with the current project name for Windows task switchers (PowerToys Run, Flow Launcher, Switcheroo, etc.)
+
 ## [1.24.1] - 2026-02-27
 
 > Requires **bd 0.49.x**. Recommended CLI: **br 0.1.14** — br 0.1.20 has a regression with older databases (fsqlite schema parsing bug), avoid until fixed.

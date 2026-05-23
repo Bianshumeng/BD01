@@ -4,6 +4,17 @@ A lightweight, standalone desktop application for managing [Beads](https://githu
 
 ![Beads Task-Issue Tracker](docs/screenshots/app-overview-1.23.0.png)
 
+> [!NOTE]
+> <a href="https://pair.w3dev.fr"><picture><source media="(prefers-color-scheme: dark)" srcset="https://pair.w3dev.fr/logo-dark.png"><source media="(prefers-color-scheme: light)" srcset="https://pair.w3dev.fr/logo-light.png"><img src="https://pair.w3dev.fr/logo-light.png" alt="PaiR" height="32"></picture></a>
+>
+> **This project's successor is [PaiR](https://pair.w3dev.fr)** — latest release: **[v0.22.0](https://github.com/w3dev33/pair-dist/releases/tag/v0.22.0)** for macOS (ARM64 + Intel), Linux (amd64 + arm64), and Windows.
+>
+> As the Beads ecosystem evolves toward autonomous multi-agent orchestration, we believe the transition should be progressive. Most developers today work **with** AI, not behind it — they need to see what's happening, understand it, and stay in control. That's what PaiR is built for: a smooth, step-by-step transition from pair programming to broader AI delegation, without losing visibility along the way.
+>
+> PaiR is fully independent: built-in CLI, own storage format (`.pair/`), zero external dependencies. Your existing `.beads/` data is never modified or overwritten — PaiR stores everything in its own directory. **Migration is automatic** for projects using `bd` 0.49.x (pre-Dolt) or `br` up to 0.1.33. Projects running `bd` 0.50+ (Dolt-based) are not currently supported for migration.
+>
+> The Beads Task-Issue Tracker remains available and functional with `bd` 0.49.x and `br` up to 0.1.33, but active development has moved to PaiR.
+
 ## Why This App?
 
 [Beads](https://github.com/steveyegge/beads) is an AI-native issue tracker that stores issues directly in your codebase (in a `.beads` folder). Compatible with both [`br`](https://github.com/Dicklesworthstone/beads_rust) (Rust, recommended) and [`bd`](https://github.com/steveyegge/beads) (Go).
